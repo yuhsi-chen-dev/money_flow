@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo, useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
@@ -26,6 +27,8 @@ function newExpense(): FixedExpenseItem {
 export default function SettingsPage() {
   const { settings, loading, error, save } = useSettings()
   const { toast } = useToast()
+  const searchParams = useSearchParams()
+  const isOnboarding = searchParams.get('reason') === 'onboard'
 
   const [monthlyIncome, setMonthlyIncome] = useState('')
   const [etfAmount, setEtfAmount] = useState(String(ETF_AMOUNT))
@@ -121,6 +124,12 @@ export default function SettingsPage() {
           設定一次，每月只需更新浮動支出。
         </p>
       </header>
+
+      {isOnboarding && !settings && (
+        <div className="mb-6 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-3 text-sm text-[var(--color-text-secondary)]">
+          請先完成設定，再回到總覽查看本月狀況。
+        </div>
+      )}
 
       {error && (
         <div className="mb-6 rounded-xl border border-[var(--color-danger-muted)] bg-[var(--color-danger-muted)] px-4 py-3 text-sm text-[var(--color-danger)]">
