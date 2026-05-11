@@ -8,9 +8,9 @@ A minimalist personal finance tracker built around one formula and one goal:
 
 ## Current Task
 
-**Status:** 🧱 Foundation complete (scaffold · auth wiring · UI primitives · finance lib + tests) — blocked on Supabase project setup before building authed pages.
+**Status:** ✅ Foundation + auth verified end-to-end. Unblocked to build authed pages. Pausing — resume tomorrow with `/settings`.
 
-**Done last session (2026-05-11):**
+**Done so far (through 2026-05-11):**
 - [x] Scaffold Next.js 14 project with TypeScript + Tailwind + pnpm
 - [x] Configure ESLint, Prettier, path aliases (`@/`)
 - [x] Schema migration written at `supabase/migrations/0001_initial_schema.sql`
@@ -19,18 +19,17 @@ A minimalist personal finance tracker built around one formula and one goal:
 - [x] App shell: Navbar + (auth)/(app) route groups + dark mode CSS variables
 - [x] UI primitives: Button, Card, Input, Badge, Toast
 - [x] `lib/finance.ts` + unit tests (11/11 passing)
+- [x] Supabase project created + Google OAuth provider configured + `.env.local` populated
+- [x] Auth flow verified end-to-end: `/login` → Google → `/auth/callback` → session cookie set → `/dashboard` (404 expected, no page yet)
 
-**Building next:**
-- [ ] `/settings` — fixed-expense list editor + GET/PUT API route
-- [ ] `/dashboard` — SavingHero, FormulaBreakdown cards, MonthSelector (currently 404s after OAuth)
+**Building next (resume here):**
+- [ ] `/settings` — fixed-expense list editor + GET/PUT API route (build this first; `/dashboard` guards on settings existing)
+- [ ] `/dashboard` — SavingHero, FormulaBreakdown cards, MonthSelector
 - [ ] `/month/[ym]` — variable expense form with live preview
 - [ ] `/history` — recharts BarChart + yearly summary + month table
 
-**Known blockers (user action):**
-- Create Supabase project; run `supabase/migrations/0001_initial_schema.sql`
-- Enable Google provider in Supabase Auth; add OAuth client ID/secret
-- Add `http://localhost:3000/auth/callback` (and Vercel URL) to Supabase redirect URLs
-- Populate `.env.local` from `.env.example`
+**Preconditions to verify before resuming:**
+- Confirm SQL migration was actually run — Supabase Table Editor should show `user_settings` and `monthly_records` with RLS lock icons. If not, run `supabase/migrations/0001_initial_schema.sql` in SQL Editor first.
 
 **Session context:**
 - Taiwan timezone (Asia/Taipei), currency NTD
@@ -914,11 +913,11 @@ supabase/.temp/         — local Supabase temp files
 - [x] Project scaffold: Next.js 14, TypeScript, Tailwind, pnpm
 - [x] ESLint + Prettier configured
 - [x] Path aliases configured (`@/`)
-- [ ] Supabase project created
-- [ ] Schema migration run (0001_initial_schema.sql)
-- [ ] Google OAuth configured in Supabase Auth settings
-- [ ] `.env.local` populated with Supabase credentials
-- [x] Login page built (Google OAuth wiring untested without live Supabase)
+- [x] Supabase project created
+- [~] Schema migration run (0001_initial_schema.sql) — verify in Table Editor before building API routes
+- [x] Google OAuth configured in Supabase Auth settings
+- [x] `.env.local` populated with Supabase credentials
+- [x] Login page built and Google OAuth working (verified end-to-end)
 - [x] App shell: Navbar + layout + dark mode CSS variables
 - [x] UI primitives: Button, Card, Input, Badge, Toast
 - [ ] Settings page + GET/PUT API route working
