@@ -8,7 +8,7 @@ A minimalist personal finance tracker built around one formula and one goal:
 
 ## Current Task
 
-**Status:** ✅ Foundation + auth verified end-to-end. Unblocked to build authed pages. Pausing — resume tomorrow with `/settings`.
+**Status:** ✅ `/settings` shipped and verified in browser. Settings persist via GET/PUT to Supabase. Resume next with `/dashboard`.
 
 **Done so far (through 2026-05-11):**
 - [x] Scaffold Next.js 14 project with TypeScript + Tailwind + pnpm
@@ -21,15 +21,12 @@ A minimalist personal finance tracker built around one formula and one goal:
 - [x] `lib/finance.ts` + unit tests (11/11 passing)
 - [x] Supabase project created + Google OAuth provider configured + `.env.local` populated
 - [x] Auth flow verified end-to-end: `/login` → Google → `/auth/callback` → session cookie set → `/dashboard` (404 expected, no page yet)
+- [x] `/settings` — page UI + `useSettings` hook + GET/PUT `/api/settings` (with validation), verified end-to-end in browser
 
 **Building next (resume here):**
-- [ ] `/settings` — fixed-expense list editor + GET/PUT API route (build this first; `/dashboard` guards on settings existing)
-- [ ] `/dashboard` — SavingHero, FormulaBreakdown cards, MonthSelector
+- [ ] `/dashboard` — SavingHero, FormulaBreakdown cards, MonthSelector; guard: if no `user_settings`, redirect to `/settings` with info banner
 - [ ] `/month/[ym]` — variable expense form with live preview
 - [ ] `/history` — recharts BarChart + yearly summary + month table
-
-**Preconditions to verify before resuming:**
-- Confirm SQL migration was actually run — Supabase Table Editor should show `user_settings` and `monthly_records` with RLS lock icons. If not, run `supabase/migrations/0001_initial_schema.sql` in SQL Editor first.
 
 **Session context:**
 - Taiwan timezone (Asia/Taipei), currency NTD
@@ -920,7 +917,7 @@ supabase/.temp/         — local Supabase temp files
 - [x] Login page built and Google OAuth working (verified end-to-end)
 - [x] App shell: Navbar + layout + dark mode CSS variables
 - [x] UI primitives: Button, Card, Input, Badge, Toast
-- [ ] Settings page + GET/PUT API route working
+- [x] Settings page + GET/PUT API route working
 - [ ] Dashboard page working (projection + real record state)
 - [ ] Month update page working with live preview
 - [ ] History page with recharts chart + summary stats
