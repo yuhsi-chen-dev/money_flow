@@ -8,7 +8,7 @@ A minimalist personal finance tracker built around one formula and one goal:
 
 ## Current Task
 
-**Status:** ✅ `/settings` shipped and verified in browser. Settings persist via GET/PUT to Supabase. Resume next with `/dashboard`.
+**Status:** ✅ `/dashboard` shipped and verified in browser. Hero + 6 formula cards + month selector wired to live Supabase data. Resume next with `/month/[ym]`.
 
 **Done so far (through 2026-05-11):**
 - [x] Scaffold Next.js 14 project with TypeScript + Tailwind + pnpm
@@ -22,10 +22,10 @@ A minimalist personal finance tracker built around one formula and one goal:
 - [x] Supabase project created + Google OAuth provider configured + `.env.local` populated
 - [x] Auth flow verified end-to-end: `/login` → Google → `/auth/callback` → session cookie set → `/dashboard` (404 expected, no page yet)
 - [x] `/settings` — page UI + `useSettings` hook + GET/PUT `/api/settings` (with validation), verified end-to-end in browser
+- [x] `/dashboard` — SavingHero, FormulaBreakdown (6 cards), MonthSelector (?ym=… search param), settings guard → `/settings?reason=onboard`, CTA → `/month/[ym]`; added `shiftYM()` to `lib/utils`
 
 **Building next (resume here):**
-- [ ] `/dashboard` — SavingHero, FormulaBreakdown cards, MonthSelector; guard: if no `user_settings`, redirect to `/settings` with info banner
-- [ ] `/month/[ym]` — variable expense form with live preview
+- [ ] `/month/[ym]` — variable expense form with live preview; needs `/api/monthly-records/[ym]` PATCH (+ probably GET/POST) and a `useMonthlyRecord` hook
 - [ ] `/history` — recharts BarChart + yearly summary + month table
 
 **Session context:**
@@ -918,7 +918,7 @@ supabase/.temp/         — local Supabase temp files
 - [x] App shell: Navbar + layout + dark mode CSS variables
 - [x] UI primitives: Button, Card, Input, Badge, Toast
 - [x] Settings page + GET/PUT API route working
-- [ ] Dashboard page working (projection + real record state)
+- [x] Dashboard page working (projection + real record state)
 - [ ] Month update page working with live preview
 - [ ] History page with recharts chart + summary stats
 - [ ] Deployed to Vercel
