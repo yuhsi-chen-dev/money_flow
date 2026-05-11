@@ -8,18 +8,29 @@ A minimalist personal finance tracker built around one formula and one goal:
 
 ## Current Task
 
-**Status:** 🚀 Project initialization — nothing built yet
+**Status:** 🧱 Foundation complete (scaffold · auth wiring · UI primitives · finance lib + tests) — blocked on Supabase project setup before building authed pages.
 
-**Building now:**
-- [ ] Scaffold Next.js 14 project with TypeScript + Tailwind + pnpm
-- [ ] Configure ESLint, Prettier, path aliases (`@/`)
-- [ ] Set up Supabase project + run schema migrations
-- [ ] Configure Google OAuth in Supabase dashboard
-- [ ] Build login page (Apple-style, Google OAuth)
-- [ ] Build app shell: Navbar + layout with dark mode CSS variables
+**Done last session (2026-05-11):**
+- [x] Scaffold Next.js 14 project with TypeScript + Tailwind + pnpm
+- [x] Configure ESLint, Prettier, path aliases (`@/`)
+- [x] Schema migration written at `supabase/migrations/0001_initial_schema.sql`
+- [x] Supabase browser/server clients + session-refresh middleware
+- [x] Build login page (Apple-style, Google OAuth) + `/auth/callback` + root redirect
+- [x] App shell: Navbar + (auth)/(app) route groups + dark mode CSS variables
+- [x] UI primitives: Button, Card, Input, Badge, Toast
+- [x] `lib/finance.ts` + unit tests (11/11 passing)
 
-**Known blockers:**
-- None yet
+**Building next:**
+- [ ] `/settings` — fixed-expense list editor + GET/PUT API route
+- [ ] `/dashboard` — SavingHero, FormulaBreakdown cards, MonthSelector (currently 404s after OAuth)
+- [ ] `/month/[ym]` — variable expense form with live preview
+- [ ] `/history` — recharts BarChart + yearly summary + month table
+
+**Known blockers (user action):**
+- Create Supabase project; run `supabase/migrations/0001_initial_schema.sql`
+- Enable Google provider in Supabase Auth; add OAuth client ID/secret
+- Add `http://localhost:3000/auth/callback` (and Vercel URL) to Supabase redirect URLs
+- Populate `.env.local` from `.env.example`
 
 **Session context:**
 - Taiwan timezone (Asia/Taipei), currency NTD
@@ -900,16 +911,16 @@ supabase/.temp/         — local Supabase temp files
 
 ## Current Status
 
-- [ ] Project scaffold: Next.js 14, TypeScript, Tailwind, pnpm
-- [ ] ESLint + Prettier configured
-- [ ] Path aliases configured (`@/`)
+- [x] Project scaffold: Next.js 14, TypeScript, Tailwind, pnpm
+- [x] ESLint + Prettier configured
+- [x] Path aliases configured (`@/`)
 - [ ] Supabase project created
 - [ ] Schema migration run (0001_initial_schema.sql)
 - [ ] Google OAuth configured in Supabase Auth settings
 - [ ] `.env.local` populated with Supabase credentials
-- [ ] Login page built and Google OAuth working
-- [ ] App shell: Navbar + layout + dark mode CSS variables
-- [ ] UI primitives: Button, Card, Input, Badge, Toast
+- [x] Login page built (Google OAuth wiring untested without live Supabase)
+- [x] App shell: Navbar + layout + dark mode CSS variables
+- [x] UI primitives: Button, Card, Input, Badge, Toast
 - [ ] Settings page + GET/PUT API route working
 - [ ] Dashboard page working (projection + real record state)
 - [ ] Month update page working with live preview
