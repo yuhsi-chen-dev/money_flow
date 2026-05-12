@@ -1,12 +1,13 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
-import type { ApiResponse, FixedExpenseItem, UserSettings } from '@/types'
+import type { ApiResponse, FixedExpenseItem, UserSettings, VariableItem } from '@/types'
 
 export interface SettingsInput {
   monthlyIncome: number
   etfAmount: number
   fixedExpenses: FixedExpenseItem[]
+  defaultVariableItems: VariableItem[]
 }
 
 interface UseSettingsResult {

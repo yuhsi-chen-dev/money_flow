@@ -1,28 +1,7 @@
 import { NextResponse } from 'next/server'
+import { rowToSettings, type SettingsRow } from '@/lib/supabase/mappers'
 import { createServerClient } from '@/lib/supabase/server'
-import type { ApiResponse, FixedExpenseItem, UserSettings } from '@/types'
-
-interface SettingsRow {
-  id: string
-  user_id: string
-  monthly_income: number | string
-  etf_amount: number | string
-  fixed_expenses: FixedExpenseItem[]
-  created_at: string
-  updated_at: string
-}
-
-function rowToSettings(row: SettingsRow): UserSettings {
-  return {
-    id: row.id,
-    userId: row.user_id,
-    monthlyIncome: Number(row.monthly_income),
-    etfAmount: Number(row.etf_amount),
-    fixedExpenses: Array.isArray(row.fixed_expenses) ? row.fixed_expenses : [],
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
-  }
-}
+import type { ApiResponse, FixedExpenseItem, UserSettings, VariableItem } from '@/types'
 
 function jsonError(message: string, code: string, status: number) {
   return NextResponse.json<ApiResponse<never>>(
@@ -45,6 +24,20 @@ function parseFixedExpenses(input: unknown): FixedExpenseItem[] | null {
     if (typeof r.name !== 'string') return null
     if (!isNonNegativeInt(r.amount)) return null
     items.push({ id: r.id, name: r.name.trim(), amount: r.amount })
+  }
+  return items
+}
+
+function parseVariableItems(input: unknown): VariableItem[] | null {
+  if (!Array.isArray(input)) return null
+  const items: VariableItem[] = []
+  for (const raw of input) {
+    if (!raw || typeof raw !== 'object') return null
+    const r = raw as Record<string, unknown>
+    if (typeof r.id !== 'string' || r.id.length === 0) return null
+    if (typeof r.category !== 'string') return null
+    if (!isNonNegativeInt(r.amount)) return null
+    items.push({ id: r.id, category: r.category.trim(), amount: r.amount })
   }
   return items
 }
@@ -99,6 +92,10 @@ export async function PUT(request: Request) {
   if (fixedExpenses === null) {
     return jsonError('fixedExpenses is invalid', 'INVALID_BODY', 400)
   }
+  const defaultVariableItems = parseVariableItems(body.defaultVariableItems)
+  if (defaultVariableItems === null) {
+    return jsonError('defaultVariableItems is invalid', 'INVALID_BODY', 400)
+  }
 
   const { data, error } = await supabase
     .from('user_settings')
@@ -108,6 +105,7 @@ export async function PUT(request: Request) {
         monthly_income: body.monthlyIncome,
         etf_amount: body.etfAmount,
         fixed_expenses: fixedExpenses,
+        default_variable_items: defaultVariableItems,
       },
       { onConflict: 'user_id' }
     )
