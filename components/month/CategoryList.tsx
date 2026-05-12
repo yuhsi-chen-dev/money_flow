@@ -10,7 +10,6 @@ const DATALIST_ID = 'default-categories'
 
 interface Props {
   items: VariableItem[]
-  expectedTotal: number
   onChange: (items: VariableItem[]) => void
 }
 
@@ -25,9 +24,8 @@ function newItem(): VariableItem {
   return { id: crypto.randomUUID(), category: '', amount: 0 }
 }
 
-export function CategoryList({ items, expectedTotal, onChange }: Props) {
+export function CategoryList({ items, onChange }: Props) {
   const itemsTotal = items.reduce((sum, i) => sum + i.amount, 0)
-  const mismatch = items.length > 0 && itemsTotal !== expectedTotal
 
   function add() {
     onChange([...items, newItem()])
@@ -56,7 +54,7 @@ export function CategoryList({ items, expectedTotal, onChange }: Props) {
 
       {items.length === 0 ? (
         <p className="text-xs text-[var(--color-text-tertiary)]">
-          選填，分類加總應等於浮動支出總額。
+          選填，逐項記錄這個月花在哪些分類。
         </p>
       ) : (
         <ul className="flex flex-col gap-3">
@@ -104,11 +102,6 @@ export function CategoryList({ items, expectedTotal, onChange }: Props) {
             <span className="ml-1 font-semibold text-[var(--color-text-primary)]">
               {formatCurrency(itemsTotal)}
             </span>
-            {mismatch && (
-              <span className="ml-2 text-[var(--color-warning)]">
-                與浮動支出總額不符
-              </span>
-            )}
           </span>
         )}
       </div>

@@ -27,6 +27,17 @@ function parseIntSafe(value: string): number {
   return Number.isFinite(n) ? n : 0
 }
 
+function cloneTemplate(template: VariableItem[]): VariableItem[] {
+  return template.map((i) => ({
+    ...i,
+    id: crypto.randomUUID(),
+  }))
+}
+
+function sumItems(items: VariableItem[]): number {
+  return items.reduce((sum, i) => sum + i.amount, 0)
+}
+
 export function VariableExpenseForm({ ym, settings }: Props) {
   const router = useRouter()
   const { toast } = useToast()
@@ -51,11 +62,17 @@ export function VariableExpenseForm({ ym, settings }: Props) {
       setNote(record.note ?? '')
       setItems(record.variableItems)
       setItemsOpen(record.variableItems.length > 0)
+    } else if (settings.defaultVariableItems.length > 0) {
+      const seeded = cloneTemplate(settings.defaultVariableItems)
+      setItems(seeded)
+      setItemsOpen(true)
+      setVariableTotal(String(sumItems(seeded)))
     }
     setHydrated(true)
-  }, [loading, record, hydrated])
+  }, [loading, record, hydrated, settings.defaultVariableItems])
 
-  const parsedVariable = parseIntSafe(variableTotal)
+  const itemsSum = sumItems(items)
+  const effectiveTotal = itemsOpen ? itemsSum : parseIntSafe(variableTotal)
   const parsedBonus = bonusOpen ? parseIntSafe(bonus) : 0
 
   const previewRecord: MonthlyRecord = useMemo(
@@ -64,19 +81,25 @@ export function VariableExpenseForm({ ym, settings }: Props) {
       userId: 'preview',
       yearMonth: ym,
       bonus: parsedBonus,
-      variableTotal: parsedVariable,
+      variableTotal: effectiveTotal,
       variableItems: [],
       createdAt: '',
       updatedAt: '',
     }),
-    [ym, parsedBonus, parsedVariable]
+    [ym, parsedBonus, effectiveTotal]
   )
 
   const calc = calculateMonth(settings, previewRecord)
 
+  function closeItemsPanel() {
+    setVariableTotal(itemsSum > 0 ? String(itemsSum) : '')
+    setItems([])
+    setItemsOpen(false)
+  }
+
   async function handleSave() {
     if (saving) return
-    if (variableTotal.trim() === '') {
+    if (!itemsOpen && variableTotal.trim() === '') {
       setShowRequiredError(true)
       toast('請輸入浮動支出', 'error')
       return
@@ -89,7 +112,7 @@ export function VariableExpenseForm({ ym, settings }: Props) {
             .filter((i) => i.category.length > 0)
         : []
       await save({
-        variableTotal: parsedVariable,
+        variableTotal: effectiveTotal,
         bonus: parsedBonus,
         variableItems: cleanedItems,
         note: note.trim() || undefined,
@@ -127,20 +150,28 @@ export function VariableExpenseForm({ ym, settings }: Props) {
             浮動支出
           </h2>
           <p className="mb-5 text-xs text-[var(--color-text-tertiary)]">
-            {formatYM(ym)} 的總花費（必填）。
+            {itemsOpen
+              ? `${formatYM(ym)} 的總額由下方分類明細加總而來。`
+              : `${formatYM(ym)} 的總花費（必填）。`}
           </p>
           <Input
             name="variableTotal"
             type="text"
             inputMode="numeric"
             placeholder="例如 12000"
-            autoFocus
-            value={variableTotal}
+            autoFocus={!itemsOpen}
+            readOnly={itemsOpen}
+            value={itemsOpen ? String(itemsSum) : variableTotal}
             onChange={(e) => {
+              if (itemsOpen) return
               setVariableTotal(e.target.value)
               if (showRequiredError) setShowRequiredError(false)
             }}
             error={showRequiredError ? '請輸入金額' : undefined}
+            hint={
+              itemsOpen ? '展開分類明細時，總額自動等於各項加總' : undefined
+            }
+            className={itemsOpen ? 'cursor-not-allowed opacity-70' : undefined}
           />
         </Card>
 
@@ -194,23 +225,16 @@ export function VariableExpenseForm({ ym, settings }: Props) {
                 </h2>
                 <button
                   type="button"
-                  onClick={() => {
-                    setItemsOpen(false)
-                    setItems([])
-                  }}
+                  onClick={closeItemsPanel}
                   className="text-xs text-[var(--color-text-tertiary)] transition-colors hover:text-[var(--color-text-secondary)]"
                 >
                   收起
                 </button>
               </div>
               <p className="mb-5 text-xs text-[var(--color-text-tertiary)]">
-                記下花在哪些類別。總額仍以上方浮動支出為準。
+                記下花在哪些類別。打開時，浮動支出總額會自動跟隨各項加總。
               </p>
-              <CategoryList
-                items={items}
-                expectedTotal={parsedVariable}
-                onChange={setItems}
-              />
+              <CategoryList items={items} onChange={setItems} />
             </>
           ) : (
             <Button
