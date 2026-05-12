@@ -35,6 +35,12 @@ export interface MonthlyRecord {
   updatedAt: string
 }
 
+// ── History (per-month calculation + ym for charts/tables) ──
+export interface HistoryMonth {
+  ym: string
+  calc: MonthCalculation
+}
+
 // ── Finance Calculation Result ───────────────────────────────
 export interface MonthCalculation {
   totalIncome: number
