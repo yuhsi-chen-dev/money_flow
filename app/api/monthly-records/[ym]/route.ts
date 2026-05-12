@@ -1,35 +1,13 @@
 import { NextResponse } from 'next/server'
+import {
+  rowToMonthlyRecord,
+  type MonthlyRecordRow,
+} from '@/lib/supabase/mappers'
 import { createServerClient } from '@/lib/supabase/server'
 import { isValidYM } from '@/lib/utils'
 import type { ApiResponse, MonthlyRecord, VariableItem } from '@/types'
 
-interface RecordRow {
-  id: string
-  user_id: string
-  year_month: string
-  bonus: number | string
-  variable_total: number | string
-  variable_items: VariableItem[]
-  note: string | null
-  created_at: string
-  updated_at: string
-}
-
 const NOTE_MAX = 200
-
-function rowToRecord(row: RecordRow): MonthlyRecord {
-  return {
-    id: row.id,
-    userId: row.user_id,
-    yearMonth: row.year_month,
-    bonus: Number(row.bonus),
-    variableTotal: Number(row.variable_total),
-    variableItems: Array.isArray(row.variable_items) ? row.variable_items : [],
-    note: row.note ?? undefined,
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
-  }
-}
 
 function jsonError(message: string, code: string, status: number) {
   return NextResponse.json<ApiResponse<never>>(
@@ -89,7 +67,7 @@ export async function GET(_request: Request, { params }: RouteParams) {
   if (error) return jsonError(error.message, 'DB_ERROR', 500)
 
   const body: ApiResponse<MonthlyRecord | null> = {
-    data: data ? rowToRecord(data as RecordRow) : null,
+    data: data ? rowToMonthlyRecord(data as MonthlyRecordRow) : null,
     error: null,
   }
   return NextResponse.json(body)
@@ -158,7 +136,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
   if (error) return jsonError(error.message, 'DB_ERROR', 500)
 
   const result: ApiResponse<MonthlyRecord> = {
-    data: rowToRecord(data as RecordRow),
+    data: rowToMonthlyRecord(data as MonthlyRecordRow),
     error: null,
   }
   return NextResponse.json(result)

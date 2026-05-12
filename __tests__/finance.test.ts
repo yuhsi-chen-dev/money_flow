@@ -11,6 +11,7 @@ function makeSettings(overrides: Partial<UserSettings> = {}): UserSettings {
       { id: 'f1', name: '房租', amount: 18000 },
       { id: 'f2', name: 'Netflix', amount: 390 },
     ],
+    defaultVariableItems: [],
     createdAt: '2026-01-01T00:00:00Z',
     updatedAt: '2026-01-01T00:00:00Z',
     ...overrides,

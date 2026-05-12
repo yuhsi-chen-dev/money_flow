@@ -11,6 +11,7 @@ export interface UserSettings {
   monthlyIncome: number
   etfAmount: number
   fixedExpenses: FixedExpenseItem[]
+  defaultVariableItems: VariableItem[]
   createdAt: string
   updatedAt: string
 }

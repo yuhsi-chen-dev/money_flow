@@ -6,14 +6,14 @@ import { MonthSelector } from '@/components/dashboard/MonthSelector'
 import { SavingHero } from '@/components/dashboard/SavingHero'
 import { PageWrapper } from '@/components/layout/PageWrapper'
 import { calculateMonth } from '@/lib/finance'
+import {
+  rowToMonthlyRecord,
+  rowToSettings,
+  type MonthlyRecordRow,
+  type SettingsRow,
+} from '@/lib/supabase/mappers'
 import { createServerClient } from '@/lib/supabase/server'
 import { formatYM, getCurrentYM, isValidYM } from '@/lib/utils'
-import type {
-  FixedExpenseItem,
-  MonthlyRecord,
-  UserSettings,
-  VariableItem,
-} from '@/types'
 
 interface PageProps {
   searchParams: { ym?: string }
@@ -43,17 +43,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
     redirect('/settings?reason=onboard' as Route)
   }
 
-  const settings: UserSettings = {
-    id: settingsRow.id,
-    userId: settingsRow.user_id,
-    monthlyIncome: Number(settingsRow.monthly_income),
-    etfAmount: Number(settingsRow.etf_amount),
-    fixedExpenses: Array.isArray(settingsRow.fixed_expenses)
-      ? (settingsRow.fixed_expenses as FixedExpenseItem[])
-      : [],
-    createdAt: settingsRow.created_at,
-    updatedAt: settingsRow.updated_at,
-  }
+  const settings = rowToSettings(settingsRow as SettingsRow)
 
   const { data: recordRow } = await supabase
     .from('monthly_records')
@@ -62,20 +52,8 @@ export default async function DashboardPage({ searchParams }: PageProps) {
     .eq('year_month', requestedYM)
     .maybeSingle()
 
-  const record: MonthlyRecord | null = recordRow
-    ? {
-        id: recordRow.id,
-        userId: recordRow.user_id,
-        yearMonth: recordRow.year_month,
-        bonus: Number(recordRow.bonus),
-        variableTotal: Number(recordRow.variable_total),
-        variableItems: Array.isArray(recordRow.variable_items)
-          ? (recordRow.variable_items as VariableItem[])
-          : [],
-        note: recordRow.note ?? undefined,
-        createdAt: recordRow.created_at,
-        updatedAt: recordRow.updated_at,
-      }
+  const record = recordRow
+    ? rowToMonthlyRecord(recordRow as MonthlyRecordRow)
     : null
 
   const calc = calculateMonth(settings, record)

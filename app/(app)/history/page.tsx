@@ -6,14 +6,14 @@ import { SavingsTrendChart } from '@/components/history/SavingsTrendChart'
 import { YearlySummary } from '@/components/history/YearlySummary'
 import { PageWrapper } from '@/components/layout/PageWrapper'
 import { calculateMonth } from '@/lib/finance'
+import {
+  rowToMonthlyRecord,
+  rowToSettings,
+  type MonthlyRecordRow,
+  type SettingsRow,
+} from '@/lib/supabase/mappers'
 import { createServerClient } from '@/lib/supabase/server'
-import type {
-  FixedExpenseItem,
-  HistoryMonth,
-  MonthlyRecord,
-  UserSettings,
-  VariableItem,
-} from '@/types'
+import type { HistoryMonth, MonthlyRecord } from '@/types'
 
 interface PageProps {
   searchParams: { year?: string }
@@ -53,17 +53,7 @@ export default async function HistoryPage({ searchParams }: PageProps) {
     redirect('/settings?reason=onboard' as Route)
   }
 
-  const settings: UserSettings = {
-    id: settingsRow.id,
-    userId: settingsRow.user_id,
-    monthlyIncome: Number(settingsRow.monthly_income),
-    etfAmount: Number(settingsRow.etf_amount),
-    fixedExpenses: Array.isArray(settingsRow.fixed_expenses)
-      ? (settingsRow.fixed_expenses as FixedExpenseItem[])
-      : [],
-    createdAt: settingsRow.created_at,
-    updatedAt: settingsRow.updated_at,
-  }
+  const settings = rowToSettings(settingsRow as SettingsRow)
 
   const { data: recordRows } = await supabase
     .from('monthly_records')
@@ -73,21 +63,9 @@ export default async function HistoryPage({ searchParams }: PageProps) {
     .lte('year_month', `${year}-12`)
 
   const recordsByYM = new Map<string, MonthlyRecord>()
-  for (const row of recordRows ?? []) {
-    const ym = row.year_month as string
-    recordsByYM.set(ym, {
-      id: row.id,
-      userId: row.user_id,
-      yearMonth: ym,
-      bonus: Number(row.bonus),
-      variableTotal: Number(row.variable_total),
-      variableItems: Array.isArray(row.variable_items)
-        ? (row.variable_items as VariableItem[])
-        : [],
-      note: row.note ?? undefined,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-    })
+  for (const row of (recordRows ?? []) as MonthlyRecordRow[]) {
+    const record = rowToMonthlyRecord(row)
+    recordsByYM.set(record.yearMonth, record)
   }
 
   const months: HistoryMonth[] = Array.from({ length: 12 }, (_, i) => {

@@ -3,9 +3,12 @@ import { notFound, redirect } from 'next/navigation'
 import type { Route } from 'next'
 import { VariableExpenseForm } from '@/components/month/VariableExpenseForm'
 import { PageWrapper } from '@/components/layout/PageWrapper'
+import {
+  rowToSettings,
+  type SettingsRow,
+} from '@/lib/supabase/mappers'
 import { createServerClient } from '@/lib/supabase/server'
 import { formatYM, isValidYM } from '@/lib/utils'
-import type { FixedExpenseItem, UserSettings } from '@/types'
 
 interface PageProps {
   params: { ym: string }
@@ -32,17 +35,7 @@ export default async function MonthPage({ params }: PageProps) {
     redirect('/settings?reason=onboard' as Route)
   }
 
-  const settings: UserSettings = {
-    id: settingsRow.id,
-    userId: settingsRow.user_id,
-    monthlyIncome: Number(settingsRow.monthly_income),
-    etfAmount: Number(settingsRow.etf_amount),
-    fixedExpenses: Array.isArray(settingsRow.fixed_expenses)
-      ? (settingsRow.fixed_expenses as FixedExpenseItem[])
-      : [],
-    createdAt: settingsRow.created_at,
-    updatedAt: settingsRow.updated_at,
-  }
+  const settings = rowToSettings(settingsRow as SettingsRow)
 
   return (
     <PageWrapper>
