@@ -28,7 +28,7 @@ A minimalist personal finance tracker built around one formula and one goal:
 - [x] Dark / light mode toggle — attribute-based theming (`[data-theme="light"|"dark"]`) with system fallback; `mf-theme` localStorage key; sync inline script in `<head>` prevents FOUC; ThemeToggle (sun/moon SVG) in Navbar
 
 **Building next (resume here):**
-- [ ] Default 浮動支出 template — let user pre-set typical category items + amounts in `/settings` so the month form starts pre-filled (design pending)
+- [ ] Default 浮動支出 template — adds `default_variable_items` column (migration 0002), a 預設浮動支出範本 editor on `/settings`, and seeds the `/month/[ym]` breakdown panel from it when no record exists yet. While the breakdown panel is open, `variableTotal` is locked to the sum of items.
 - [ ] Deploy to Vercel
 
 **Session context:**
@@ -305,7 +305,8 @@ moneyflow/
 │
 ├── supabase/
 │   └── migrations/
-│       └── 0001_initial_schema.sql   # Full schema — DO NOT edit
+│       ├── 0001_initial_schema.sql           # Full schema — DO NOT edit
+│       └── 0002_default_variable_items.sql   # Adds default_variable_items column
 │
 ├── __tests__/
 │   └── finance.test.ts               # Unit tests for lib/finance.ts
@@ -324,7 +325,10 @@ moneyflow/
 
 ## Database Schema
 
-File: `supabase/migrations/0001_initial_schema.sql`  
+Files:
+- `supabase/migrations/0001_initial_schema.sql` — initial tables, RLS, triggers
+- `supabase/migrations/0002_default_variable_items.sql` — adds `default_variable_items JSONB` to `user_settings` (template that seeds `/month/[ym]`)
+
 **Never edit migration files directly. Use `pnpm supabase:migration:new <name>` to add changes.**
 
 ```sql
@@ -332,15 +336,18 @@ File: `supabase/migrations/0001_initial_schema.sql`
 -- user_settings: one row per user
 -- ============================================================
 CREATE TABLE user_settings (
-  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id         UUID REFERENCES auth.users(id) ON DELETE CASCADE UNIQUE NOT NULL,
-  monthly_income  NUMERIC(12, 0) NOT NULL DEFAULT 0,
-  etf_amount      NUMERIC(12, 0) NOT NULL DEFAULT 24000,
-  fixed_expenses  JSONB NOT NULL DEFAULT '[]'::JSONB,
+  id                     UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id                UUID REFERENCES auth.users(id) ON DELETE CASCADE UNIQUE NOT NULL,
+  monthly_income         NUMERIC(12, 0) NOT NULL DEFAULT 0,
+  etf_amount             NUMERIC(12, 0) NOT NULL DEFAULT 24000,
+  fixed_expenses         JSONB NOT NULL DEFAULT '[]'::JSONB,
   -- fixed_expenses shape:
   -- [{ "id": "uuid", "name": "房租", "amount": 18000 }]
-  created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  default_variable_items JSONB NOT NULL DEFAULT '[]'::JSONB,   -- added in 0002
+  -- default_variable_items shape (same as variable_items, sans note):
+  -- [{ "id": "uuid", "category": "食費", "amount": 8000 }]
+  created_at             TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at             TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 -- ============================================================
@@ -418,6 +425,7 @@ export interface UserSettings {
   monthlyIncome: number           // integer NTD
   etfAmount: number               // default 24000
   fixedExpenses: FixedExpenseItem[]
+  defaultVariableItems: VariableItem[]   // template that seeds /month/[ym]
   createdAt: string
   updatedAt: string
 }
@@ -828,10 +836,10 @@ supabase/.temp/         — local Supabase temp files
 - Header: `更新 {formatYM(ym)}` with back arrow → `/dashboard`
 - **浮動支出 total** — required number input, autofocus on mount
 - **Bonus** — optional, collapsed by default behind "＋ 新增獎金" toggle
-- **Category breakdown** — optional, behind "＋ 新增分類明細" toggle:
+- **Category breakdown** — optional, behind "＋ 新增分類明細" toggle. Auto-opens (and seeds rows) if `settings.defaultVariableItems` is non-empty and no record exists yet for this month.
   - Add item: select from `DEFAULT_CATEGORIES` or type custom name + amount
-  - Show running total vs. entered total — warning if mismatch
   - Remove items with × button
+  - **While the breakdown panel is open, `variableTotal` is read-only and equals the sum of items.** Closing the panel returns to freeform editing of the total.
 - **Note** — optional textarea, max 200 chars
 - **Live preview panel** — sticky on desktop right column, below form on mobile:
   - All formula values update as user types (no submit needed)
@@ -868,6 +876,11 @@ supabase/.temp/         — local Supabase temp files
   - Inline editing (no separate modal)
   - "＋ 新增固定支出" button appends a new empty row
   - Running total shown below: "固定支出合計：NT$XX,XXX"
+- **預設浮動支出範本** — optional template that seeds `/month/[ym]`:
+  - List of items: category input (with datalist of `DEFAULT_CATEGORIES`) + amount input + × delete
+  - "＋ 新增分類" button appends an empty row
+  - Running total shown below: "範本合計：NT$XX,XXX"
+  - Empty list = feature inactive; month form keeps its current freeform behavior
 - **Preview** — shows projected 額外儲蓄 assuming no 浮動支出 and no bonus
 - **儲存** → PUT `/api/settings`
 - On success → Toast "設定已儲存 ✓"
@@ -883,7 +896,9 @@ supabase/.temp/         — local Supabase temp files
 | Months with no record in history | Empty bar in chart (height 0), "—" in table cells |
 | Negative 額外儲蓄 | Red color, no error — perfectly valid |
 | bonus = 0 | Don't render bonus line in formula cards |
-| variableItems sum ≠ variableTotal | Show inline warning; save anyway (variableTotal is authoritative) |
+| variableItems sum ≠ variableTotal | While breakdown panel is open, the total is locked to the sum; closing the panel re-enables freeform total entry. Legacy records with mismatched totals get reconciled to the sum on next save. |
+| First time opening a month with `defaultVariableItems` configured and no existing record | Breakdown panel auto-opens, items pre-seeded from template, total auto-set to sum |
+| `defaultVariableItems` configured but record already exists for the month | Load saved `variableItems` (template is ignored — record is authoritative) |
 | Navigate to a future month | Allowed — useful for planning |
 | ETF amount > totalSavings | extraSavings is negative, shown in red |
 | Edit a past month | Allowed — no restrictions on past dates |
