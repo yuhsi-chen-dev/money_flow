@@ -8,7 +8,7 @@ A minimalist personal finance tracker built around one formula and one goal:
 
 ## Current Task
 
-**Status:** ✅ 預設浮動支出 template shipped — settings editor, migration 0002 applied, /month seeds + locks total when breakdown is open. Pausing — resume with Vercel deploy.
+**Status:** 🛠 Two UX tweaks in progress (2026-05-12) — (1) 浮動支出 expandable 明細 on `/dashboard` mirroring 固定支出, (2) reframe `/month/[ym]` into a 本月收入 / 本月支出 split so 獎金 lives under 收入 instead of next to 浮動支出.
 
 **Done so far (through 2026-05-12):**
 - [x] Scaffold Next.js 14 project with TypeScript + Tailwind + pnpm
@@ -28,7 +28,11 @@ A minimalist personal finance tracker built around one formula and one goal:
 - [x] Dark / light mode toggle — attribute-based theming (`[data-theme="light"|"dark"]`) with system fallback; `mf-theme` localStorage key; sync inline script in `<head>` prevents FOUC; ThemeToggle (sun/moon SVG) in Navbar
 - [x] Default 浮動支出 template — migration 0002 adds `default_variable_items`; 預設浮動支出範本 editor on `/settings`; `/month/[ym]` auto-opens the breakdown panel with seeded items and locks `variableTotal` to the items-sum while open; shared row mappers extracted to `lib/supabase/mappers.ts`
 
-**Building next (resume here):**
+**Building next (in progress):**
+- [ ] `/dashboard` — 浮動支出 card gets the same `<details>` expandable list as 固定支出 when `record.variableItems` is non-empty
+- [ ] `/month/[ym]` — split form into 本月收入 section (月薪 read-only + 獎金 toggle) and 本月支出 section (浮動支出 + 分類明細); update header + copy so the page reads as "月底更新" rather than "浮動支出 only"
+
+**Queued after:**
 - [ ] Deploy to Vercel — connect repo, copy env vars, set redirect URLs for Supabase Google OAuth to the production domain
 
 **Session context:**
@@ -823,8 +827,8 @@ supabase/.temp/         — local Supabase temp files
   - Color: `--color-success` if ≥ 0, `--color-danger` if < 0
 - **Formula cards grid** (`grid-cols-1 md:grid-cols-2 lg:grid-cols-3`):
   1. 收入 — `monthlyIncome` + bonus line if `bonus > 0`
-  2. 固定支出 — `totalFixed` with expandable list on hover/click
-  3. 浮動支出 — `variableTotal` or "尚未輸入" if projection
+  2. 固定支出 — `totalFixed` with a `<details>` 展開明細 list of all items
+  3. 浮動支出 — `variableTotal` or "尚未輸入" if projection; when `record.variableItems` is non-empty, render the same `<details>` 展開明細 list (category + amount per row)
   4. 總儲蓄 — `totalSavings`
   5. ETF 定期定額 — `etfAmount`, always `--color-success`
   6. 額外儲蓄 — `extraSavings`, color-coded, larger than other cards
@@ -834,13 +838,20 @@ supabase/.temp/         — local Supabase temp files
 ### `/month/[ym]` — 月底更新
 - Validate `ym` with `isValidYM()` — 404 if invalid format
 - Header: `更新 {formatYM(ym)}` with back arrow → `/dashboard`
-- **浮動支出 total** — required number input, autofocus on mount
-- **Bonus** — optional, collapsed by default behind "＋ 新增獎金" toggle
-- **Category breakdown** — optional, behind "＋ 新增分類明細" toggle. Auto-opens (and seeds rows) if `settings.defaultVariableItems` is non-empty and no record exists yet for this month.
-  - Add item: select from `DEFAULT_CATEGORIES` or type custom name + amount
-  - Remove items with × button
-  - **While the breakdown panel is open, `variableTotal` is read-only and equals the sum of items.** Closing the panel returns to freeform editing of the total.
-- **Note** — optional textarea, max 200 chars
+- The form is grouped into **two labeled sections** so the page reads as "月底更新", not "浮動支出 only":
+
+  **本月收入** (section heading)
+  - 月薪 — read-only display of `settings.monthlyIncome` (formatted), captioned "於設定頁調整"
+  - 獎金 — optional, collapsed by default behind "＋ 新增獎金" toggle; when open, shows a number input + 移除 link. Caption: "這個月的一次性額外收入"
+
+  **本月支出** (section heading)
+  - 浮動支出 total — required number input, autofocus on mount when breakdown is closed
+  - 分類明細 — optional, behind "＋ 新增分類明細" toggle. Auto-opens (and seeds rows) if `settings.defaultVariableItems` is non-empty and no record exists yet for this month.
+    - Add item: select from `DEFAULT_CATEGORIES` or type custom name + amount
+    - Remove items with × button
+    - **While the breakdown panel is open, `variableTotal` is read-only and equals the sum of items.** Closing the panel returns to freeform editing of the total.
+
+- **Note** — optional textarea, max 200 chars (rendered after both sections)
 - **Live preview panel** — sticky on desktop right column, below form on mobile:
   - All formula values update as user types (no submit needed)
   - 額外儲蓄 preview in large colored text
