@@ -8,9 +8,9 @@ A minimalist personal finance tracker built around one formula and one goal:
 
 ## Current Task
 
-**Status:** ✅ `/dashboard` shipped and verified in browser. Hero + 6 formula cards + month selector wired to live Supabase data. Resume next with `/month/[ym]`.
+**Status:** ✅ `/month/[ym]` shipped and verified in browser. Save → toast → redirect-to-dashboard loop works end-to-end. Resume next with `/history`.
 
-**Done so far (through 2026-05-11):**
+**Done so far (through 2026-05-12):**
 - [x] Scaffold Next.js 14 project with TypeScript + Tailwind + pnpm
 - [x] Configure ESLint, Prettier, path aliases (`@/`)
 - [x] Schema migration written at `supabase/migrations/0001_initial_schema.sql`
@@ -23,10 +23,10 @@ A minimalist personal finance tracker built around one formula and one goal:
 - [x] Auth flow verified end-to-end: `/login` → Google → `/auth/callback` → session cookie set → `/dashboard` (404 expected, no page yet)
 - [x] `/settings` — page UI + `useSettings` hook + GET/PUT `/api/settings` (with validation), verified end-to-end in browser
 - [x] `/dashboard` — SavingHero, FormulaBreakdown (6 cards), MonthSelector (?ym=… search param), settings guard → `/settings?reason=onboard`, CTA → `/month/[ym]`; added `shiftYM()` to `lib/utils`
+- [x] `/month/[ym]` — VariableExpenseForm (浮動支出 + 獎金 toggle + 分類明細 toggle + 200-char 備註) with sticky LivePreview, `useMonthlyRecord` hook, GET + PATCH-upsert at `/api/monthly-records/[ym]`; save → toast → redirect to `/dashboard`
 
 **Building next (resume here):**
-- [ ] `/month/[ym]` — variable expense form with live preview; needs `/api/monthly-records/[ym]` PATCH (+ probably GET/POST) and a `useMonthlyRecord` hook
-- [ ] `/history` — recharts BarChart + yearly summary + month table
+- [ ] `/history` — recharts BarChart + yearly summary + month table; needs `GET /api/monthly-records` list endpoint and a `useMonthlyHistory` hook (or server-side fetch)
 
 **Session context:**
 - Taiwan timezone (Asia/Taipei), currency NTD
@@ -919,7 +919,7 @@ supabase/.temp/         — local Supabase temp files
 - [x] UI primitives: Button, Card, Input, Badge, Toast
 - [x] Settings page + GET/PUT API route working
 - [x] Dashboard page working (projection + real record state)
-- [ ] Month update page working with live preview
+- [x] Month update page working with live preview
 - [ ] History page with recharts chart + summary stats
 - [ ] Deployed to Vercel
 - [ ] Custom domain (optional)
