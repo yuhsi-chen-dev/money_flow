@@ -9,9 +9,11 @@ import { useToast } from '@/components/ui/Toast'
 import { PageWrapper } from '@/components/layout/PageWrapper'
 import { useSettings } from '@/hooks/useSettings'
 import { calculateMonth, getTotalFixed } from '@/lib/finance'
-import { ETF_AMOUNT } from '@/lib/constants'
+import { DEFAULT_CATEGORIES, ETF_AMOUNT } from '@/lib/constants'
 import { cn, formatCurrency } from '@/lib/utils'
-import type { FixedExpenseItem, UserSettings } from '@/types'
+import type { FixedExpenseItem, UserSettings, VariableItem } from '@/types'
+
+const DEFAULT_VARIABLE_DATALIST_ID = 'settings-default-categories'
 
 function parseIntSafe(value: string): number {
   const cleaned = value.replace(/[^0-9]/g, '')
@@ -24,6 +26,10 @@ function newExpense(): FixedExpenseItem {
   return { id: crypto.randomUUID(), name: '', amount: 0 }
 }
 
+function newDefaultItem(): VariableItem {
+  return { id: crypto.randomUUID(), category: '', amount: 0 }
+}
+
 export default function SettingsPage() {
   const { settings, loading, error, save } = useSettings()
   const { toast } = useToast()
@@ -33,6 +39,7 @@ export default function SettingsPage() {
   const [monthlyIncome, setMonthlyIncome] = useState('')
   const [etfAmount, setEtfAmount] = useState(String(ETF_AMOUNT))
   const [expenses, setExpenses] = useState<FixedExpenseItem[]>([])
+  const [defaultItems, setDefaultItems] = useState<VariableItem[]>([])
   const [saving, setSaving] = useState(false)
   const [hydrated, setHydrated] = useState(false)
 
@@ -42,6 +49,7 @@ export default function SettingsPage() {
       setMonthlyIncome(String(settings.monthlyIncome))
       setEtfAmount(String(settings.etfAmount))
       setExpenses(settings.fixedExpenses)
+      setDefaultItems(settings.defaultVariableItems)
     }
     setHydrated(true)
   }, [loading, settings, hydrated])
@@ -56,11 +64,14 @@ export default function SettingsPage() {
       monthlyIncome: parsedIncome,
       etfAmount: parsedEtf,
       fixedExpenses: expenses,
+      defaultVariableItems: defaultItems,
       createdAt: '',
       updatedAt: '',
     }),
-    [parsedIncome, parsedEtf, expenses]
+    [parsedIncome, parsedEtf, expenses, defaultItems]
   )
+
+  const defaultItemsTotal = defaultItems.reduce((sum, i) => sum + i.amount, 0)
 
   const calc = calculateMonth(previewSettings, null)
   const totalFixed = getTotalFixed(previewSettings)
@@ -82,19 +93,45 @@ export default function SettingsPage() {
     setExpenses((prev) => prev.filter((e) => e.id !== id))
   }
 
+  function addDefaultItem() {
+    setDefaultItems((prev) => [...prev, newDefaultItem()])
+  }
+
+  function updateDefaultCategory(id: string, category: string) {
+    setDefaultItems((prev) =>
+      prev.map((i) => (i.id === id ? { ...i, category } : i))
+    )
+  }
+
+  function updateDefaultAmount(id: string, raw: string) {
+    const amount = parseIntSafe(raw)
+    setDefaultItems((prev) =>
+      prev.map((i) => (i.id === id ? { ...i, amount } : i))
+    )
+  }
+
+  function removeDefaultItem(id: string) {
+    setDefaultItems((prev) => prev.filter((i) => i.id !== id))
+  }
+
   async function handleSave() {
     if (saving) return
     setSaving(true)
     try {
-      const cleaned = expenses
+      const cleanedExpenses = expenses
         .map((e) => ({ ...e, name: e.name.trim() }))
         .filter((e) => e.name.length > 0)
+      const cleanedDefaults = defaultItems
+        .map((i) => ({ ...i, category: i.category.trim() }))
+        .filter((i) => i.category.length > 0)
       await save({
         monthlyIncome: parsedIncome,
         etfAmount: parsedEtf,
-        fixedExpenses: cleaned,
+        fixedExpenses: cleanedExpenses,
+        defaultVariableItems: cleanedDefaults,
       })
-      setExpenses(cleaned)
+      setExpenses(cleanedExpenses)
+      setDefaultItems(cleanedDefaults)
       toast('設定已儲存 ✓', 'success')
     } catch (e) {
       const msg = e instanceof Error ? e.message : '儲存失敗，請再試一次'
@@ -233,6 +270,85 @@ export default function SettingsPage() {
           <div className="mt-5">
             <Button variant="secondary" size="sm" onClick={addExpense}>
               ＋ 新增固定支出
+            </Button>
+          </div>
+        </Card>
+
+        <Card>
+          <datalist id={DEFAULT_VARIABLE_DATALIST_ID}>
+            {DEFAULT_CATEGORIES.map((c) => (
+              <option key={c} value={c} />
+            ))}
+          </datalist>
+          <div className="mb-5 flex items-baseline justify-between gap-4">
+            <div>
+              <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">
+                預設浮動支出範本
+              </h2>
+              <p className="mt-1 text-xs text-[var(--color-text-tertiary)]">
+                每月一打開更新頁就自動帶入這些分類，再依實際花費微調即可。
+              </p>
+            </div>
+            {defaultItems.length > 0 && (
+              <span className="shrink-0 text-xs text-[var(--color-text-secondary)]">
+                範本合計：
+                <span className="ml-1 font-semibold tabular-nums text-[var(--color-text-primary)]">
+                  {formatCurrency(defaultItemsTotal)}
+                </span>
+              </span>
+            )}
+          </div>
+
+          {defaultItems.length === 0 ? (
+            <div className="rounded-xl border border-dashed border-[var(--color-border)] px-4 py-10 text-center text-sm text-[var(--color-text-tertiary)]">
+              還沒有範本。不設定也沒關係，月底依然可以手動填寫。
+            </div>
+          ) : (
+            <ul className="flex flex-col gap-3">
+              {defaultItems.map((item) => (
+                <li
+                  key={item.id}
+                  className="flex items-start gap-2 md:items-center"
+                >
+                  <div className="flex-1">
+                    <Input
+                      name={`default-category-${item.id}`}
+                      list={DEFAULT_VARIABLE_DATALIST_ID}
+                      placeholder="分類（例如 食費）"
+                      value={item.category}
+                      onChange={(e) =>
+                        updateDefaultCategory(item.id, e.target.value)
+                      }
+                    />
+                  </div>
+                  <div className="w-32 md:w-40">
+                    <Input
+                      name={`default-amount-${item.id}`}
+                      type="text"
+                      inputMode="numeric"
+                      placeholder="0"
+                      value={item.amount === 0 ? '' : String(item.amount)}
+                      onChange={(e) =>
+                        updateDefaultAmount(item.id, e.target.value)
+                      }
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => removeDefaultItem(item.id)}
+                    aria-label="刪除"
+                    className="mt-1 inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-[var(--color-text-tertiary)] transition-all duration-200 hover:bg-[var(--color-bg-hover)] hover:text-[var(--color-danger)]"
+                  >
+                    ×
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          <div className="mt-5">
+            <Button variant="secondary" size="sm" onClick={addDefaultItem}>
+              ＋ 新增分類
             </Button>
           </div>
         </Card>
