@@ -8,7 +8,7 @@ A minimalist personal finance tracker built around one formula and one goal:
 
 ## Current Task
 
-**Status:** ✅ `/month/[ym]` shipped and verified in browser. Save → toast → redirect-to-dashboard loop works end-to-end. Resume next with `/history`.
+**Status:** ✅ `/history` shipped — all four core pages built and verified end-to-end. Building a dark/light mode toggle next.
 
 **Done so far (through 2026-05-12):**
 - [x] Scaffold Next.js 14 project with TypeScript + Tailwind + pnpm
@@ -24,9 +24,11 @@ A minimalist personal finance tracker built around one formula and one goal:
 - [x] `/settings` — page UI + `useSettings` hook + GET/PUT `/api/settings` (with validation), verified end-to-end in browser
 - [x] `/dashboard` — SavingHero, FormulaBreakdown (6 cards), MonthSelector (?ym=… search param), settings guard → `/settings?reason=onboard`, CTA → `/month/[ym]`; added `shiftYM()` to `lib/utils`
 - [x] `/month/[ym]` — VariableExpenseForm (浮動支出 + 獎金 toggle + 分類明細 toggle + 200-char 備註) with sticky LivePreview, `useMonthlyRecord` hook, GET + PATCH-upsert at `/api/monthly-records/[ym]`; save → toast → redirect to `/dashboard`
+- [x] `/history` — recharts BarChart (Jan–Dec, color-coded bars + tooltip), YearlySummary 4-card grid, MonthTable with 編輯 links; year selector via `?year=…`; `GET /api/monthly-records` (with optional `?year=` filter); added `HistoryMonth` type
 
 **Building next (resume here):**
-- [ ] `/history` — recharts BarChart + yearly summary + month table; needs `GET /api/monthly-records` list endpoint and a `useMonthlyHistory` hook (or server-side fetch)
+- [ ] Dark / light mode toggle — switch from media-query-only to attribute-based theming (`[data-theme="light"|"dark"]`), persist user choice in localStorage, FOUC-prevention inline script, ThemeToggle button in Navbar
+- [ ] Deploy to Vercel
 
 **Session context:**
 - Taiwan timezone (Asia/Taipei), currency NTD
@@ -920,7 +922,8 @@ supabase/.temp/         — local Supabase temp files
 - [x] Settings page + GET/PUT API route working
 - [x] Dashboard page working (projection + real record state)
 - [x] Month update page working with live preview
-- [ ] History page with recharts chart + summary stats
+- [x] History page with recharts chart + summary stats
+- [ ] Dark / light mode manual toggle (persisted in localStorage)
 - [ ] Deployed to Vercel
 - [ ] Custom domain (optional)
 
