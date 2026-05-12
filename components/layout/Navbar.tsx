@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
+import { ThemeToggle } from '@/components/ui/ThemeToggle'
 
 const links = [
   { href: '/dashboard', label: '總覽' },
@@ -49,9 +50,12 @@ export function Navbar() {
             </Link>
           )
         })}
+        <div className="ml-2">
+          <ThemeToggle />
+        </div>
         <button
           onClick={handleSignOut}
-          className="ml-2 rounded-full px-3 py-1.5 text-sm text-[var(--color-text-tertiary)] transition-all duration-200 hover:text-[var(--color-text-primary)]"
+          className="rounded-full px-3 py-1.5 text-sm text-[var(--color-text-tertiary)] transition-all duration-200 hover:text-[var(--color-text-primary)]"
         >
           登出
         </button>

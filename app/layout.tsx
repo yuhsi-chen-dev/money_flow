@@ -15,9 +15,14 @@ export const viewport: Viewport = {
   initialScale: 1,
 }
 
+const THEME_INIT_SCRIPT = `(function(){try{var t=localStorage.getItem('mf-theme');if(t==='light'||t==='dark'){document.documentElement.setAttribute('data-theme',t);}}catch(_){}})();`
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="zh-TW">
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+      </head>
       <body>{children}</body>
     </html>
   )
