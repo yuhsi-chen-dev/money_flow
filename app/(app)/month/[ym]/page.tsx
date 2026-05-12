@@ -52,7 +52,7 @@ export default async function MonthPage({ params }: PageProps) {
             更新 {formatYM(params.ym)}
           </h1>
           <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
-            填入這個月的浮動支出，儲存後回到總覽。
+            記錄這個月的收入與支出，儲存後回到總覽。
           </p>
         </div>
       </header>

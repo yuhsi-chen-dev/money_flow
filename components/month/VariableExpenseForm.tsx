@@ -10,7 +10,7 @@ import { CategoryList } from '@/components/month/CategoryList'
 import { LivePreview } from '@/components/month/LivePreview'
 import { useMonthlyRecord } from '@/hooks/useMonthlyRecord'
 import { calculateMonth } from '@/lib/finance'
-import { formatYM } from '@/lib/utils'
+import { formatCurrency, formatYM } from '@/lib/utils'
 import type { MonthlyRecord, UserSettings, VariableItem } from '@/types'
 
 const NOTE_MAX = 200
@@ -138,114 +138,144 @@ export function VariableExpenseForm({ ym, settings }: Props) {
 
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_minmax(260px,340px)]">
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-8">
         {error && (
           <div className="rounded-xl border border-[var(--color-danger-muted)] bg-[var(--color-danger-muted)] px-4 py-3 text-sm text-[var(--color-danger)]">
             無法載入紀錄：{error}
           </div>
         )}
 
-        <Card>
-          <h2 className="mb-1 text-lg font-semibold text-[var(--color-text-primary)]">
-            浮動支出
-          </h2>
-          <p className="mb-5 text-xs text-[var(--color-text-tertiary)]">
-            {itemsOpen
-              ? `${formatYM(ym)} 的總額由下方分類明細加總而來。`
-              : `${formatYM(ym)} 的總花費（必填）。`}
-          </p>
-          <Input
-            name="variableTotal"
-            type="text"
-            inputMode="numeric"
-            placeholder="例如 12000"
-            autoFocus={!itemsOpen}
-            readOnly={itemsOpen}
-            value={itemsOpen ? String(itemsSum) : variableTotal}
-            onChange={(e) => {
-              if (itemsOpen) return
-              setVariableTotal(e.target.value)
-              if (showRequiredError) setShowRequiredError(false)
-            }}
-            error={showRequiredError ? '請輸入金額' : undefined}
-            hint={
-              itemsOpen ? '展開分類明細時，總額自動等於各項加總' : undefined
-            }
-            className={itemsOpen ? 'cursor-not-allowed opacity-70' : undefined}
+        <section className="flex flex-col gap-4">
+          <SectionHeader
+            title="本月收入"
+            hint="月薪固定，獎金為這個月的一次性額外收入。"
           />
-        </Card>
 
-        <Card>
-          {bonusOpen ? (
-            <>
-              <div className="mb-1 flex items-baseline justify-between">
-                <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">
-                  獎金
-                </h2>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setBonusOpen(false)
-                    setBonus('')
-                  }}
-                  className="text-xs text-[var(--color-text-tertiary)] transition-colors hover:text-[var(--color-text-secondary)]"
-                >
-                  移除
-                </button>
+          <Card>
+            <div className="flex items-baseline justify-between gap-3">
+              <div>
+                <h3 className="text-sm font-medium text-[var(--color-text-secondary)]">
+                  月薪
+                </h3>
+                <p className="mt-1 text-xs text-[var(--color-text-tertiary)]">
+                  於設定頁調整
+                </p>
               </div>
-              <p className="mb-5 text-xs text-[var(--color-text-tertiary)]">
-                這個月的一次性額外收入。
-              </p>
-              <Input
-                name="bonus"
-                type="text"
-                inputMode="numeric"
-                placeholder="例如 5000"
-                value={bonus}
-                onChange={(e) => setBonus(e.target.value)}
-              />
-            </>
-          ) : (
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => setBonusOpen(true)}
-            >
-              ＋ 新增獎金
-            </Button>
-          )}
-        </Card>
+              <div className="text-2xl font-semibold tabular-nums tracking-tight text-[var(--color-text-primary)]">
+                {formatCurrency(settings.monthlyIncome)}
+              </div>
+            </div>
+          </Card>
 
-        <Card>
-          {itemsOpen ? (
-            <>
-              <div className="mb-1 flex items-baseline justify-between">
-                <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">
-                  分類明細
-                </h2>
-                <button
-                  type="button"
-                  onClick={closeItemsPanel}
-                  className="text-xs text-[var(--color-text-tertiary)] transition-colors hover:text-[var(--color-text-secondary)]"
-                >
-                  收起
-                </button>
-              </div>
-              <p className="mb-5 text-xs text-[var(--color-text-tertiary)]">
-                記下花在哪些類別。打開時，浮動支出總額會自動跟隨各項加總。
-              </p>
-              <CategoryList items={items} onChange={setItems} />
-            </>
-          ) : (
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => setItemsOpen(true)}
-            >
-              ＋ 新增分類明細
-            </Button>
-          )}
-        </Card>
+          <Card>
+            {bonusOpen ? (
+              <>
+                <div className="mb-1 flex items-baseline justify-between">
+                  <h3 className="text-lg font-semibold text-[var(--color-text-primary)]">
+                    獎金
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setBonusOpen(false)
+                      setBonus('')
+                    }}
+                    className="text-xs text-[var(--color-text-tertiary)] transition-colors hover:text-[var(--color-text-secondary)]"
+                  >
+                    移除
+                  </button>
+                </div>
+                <p className="mb-5 text-xs text-[var(--color-text-tertiary)]">
+                  這個月的一次性額外收入。
+                </p>
+                <Input
+                  name="bonus"
+                  type="text"
+                  inputMode="numeric"
+                  placeholder="例如 5000"
+                  value={bonus}
+                  onChange={(e) => setBonus(e.target.value)}
+                />
+              </>
+            ) : (
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => setBonusOpen(true)}
+              >
+                ＋ 新增獎金
+              </Button>
+            )}
+          </Card>
+        </section>
+
+        <section className="flex flex-col gap-4">
+          <SectionHeader
+            title="本月支出"
+            hint="填入這個月的浮動支出總額，可選擇展開分類明細。"
+          />
+
+          <Card>
+            <h3 className="mb-1 text-lg font-semibold text-[var(--color-text-primary)]">
+              浮動支出
+            </h3>
+            <p className="mb-5 text-xs text-[var(--color-text-tertiary)]">
+              {itemsOpen
+                ? `${formatYM(ym)} 的總額由下方分類明細加總而來。`
+                : `${formatYM(ym)} 的總花費（必填）。`}
+            </p>
+            <Input
+              name="variableTotal"
+              type="text"
+              inputMode="numeric"
+              placeholder="例如 12000"
+              autoFocus={!itemsOpen}
+              readOnly={itemsOpen}
+              value={itemsOpen ? String(itemsSum) : variableTotal}
+              onChange={(e) => {
+                if (itemsOpen) return
+                setVariableTotal(e.target.value)
+                if (showRequiredError) setShowRequiredError(false)
+              }}
+              error={showRequiredError ? '請輸入金額' : undefined}
+              hint={
+                itemsOpen ? '展開分類明細時，總額自動等於各項加總' : undefined
+              }
+              className={itemsOpen ? 'cursor-not-allowed opacity-70' : undefined}
+            />
+          </Card>
+
+          <Card>
+            {itemsOpen ? (
+              <>
+                <div className="mb-1 flex items-baseline justify-between">
+                  <h3 className="text-lg font-semibold text-[var(--color-text-primary)]">
+                    分類明細
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={closeItemsPanel}
+                    className="text-xs text-[var(--color-text-tertiary)] transition-colors hover:text-[var(--color-text-secondary)]"
+                  >
+                    收起
+                  </button>
+                </div>
+                <p className="mb-5 text-xs text-[var(--color-text-tertiary)]">
+                  記下花在哪些類別。打開時，浮動支出總額會自動跟隨各項加總。
+                </p>
+                <CategoryList items={items} onChange={setItems} />
+              </>
+            ) : (
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => setItemsOpen(true)}
+              >
+                ＋ 新增分類明細
+              </Button>
+            )}
+          </Card>
+        </section>
 
         <Card>
           <label
@@ -282,6 +312,17 @@ export function VariableExpenseForm({ ym, settings }: Props) {
       <aside className="lg:sticky lg:top-20 lg:self-start">
         <LivePreview calc={calc} />
       </aside>
+    </div>
+  )
+}
+
+function SectionHeader({ title, hint }: { title: string; hint: string }) {
+  return (
+    <div className="flex flex-col gap-1 px-1">
+      <h2 className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--color-text-tertiary)]">
+        {title}
+      </h2>
+      <p className="text-xs text-[var(--color-text-tertiary)]">{hint}</p>
     </div>
   )
 }
