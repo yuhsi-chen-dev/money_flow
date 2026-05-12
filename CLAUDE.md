@@ -8,7 +8,7 @@ A minimalist personal finance tracker built around one formula and one goal:
 
 ## Current Task
 
-**Status:** ✅ `/history` shipped — all four core pages built and verified end-to-end. Building a dark/light mode toggle next.
+**Status:** ✅ Dark/light mode toggle shipped — all four core pages plus theme switching are live. Designing the next feature: default 浮動支出 template.
 
 **Done so far (through 2026-05-12):**
 - [x] Scaffold Next.js 14 project with TypeScript + Tailwind + pnpm
@@ -25,9 +25,10 @@ A minimalist personal finance tracker built around one formula and one goal:
 - [x] `/dashboard` — SavingHero, FormulaBreakdown (6 cards), MonthSelector (?ym=… search param), settings guard → `/settings?reason=onboard`, CTA → `/month/[ym]`; added `shiftYM()` to `lib/utils`
 - [x] `/month/[ym]` — VariableExpenseForm (浮動支出 + 獎金 toggle + 分類明細 toggle + 200-char 備註) with sticky LivePreview, `useMonthlyRecord` hook, GET + PATCH-upsert at `/api/monthly-records/[ym]`; save → toast → redirect to `/dashboard`
 - [x] `/history` — recharts BarChart (Jan–Dec, color-coded bars + tooltip), YearlySummary 4-card grid, MonthTable with 編輯 links; year selector via `?year=…`; `GET /api/monthly-records` (with optional `?year=` filter); added `HistoryMonth` type
+- [x] Dark / light mode toggle — attribute-based theming (`[data-theme="light"|"dark"]`) with system fallback; `mf-theme` localStorage key; sync inline script in `<head>` prevents FOUC; ThemeToggle (sun/moon SVG) in Navbar
 
 **Building next (resume here):**
-- [ ] Dark / light mode toggle — switch from media-query-only to attribute-based theming (`[data-theme="light"|"dark"]`), persist user choice in localStorage, FOUC-prevention inline script, ThemeToggle button in Navbar
+- [ ] Default 浮動支出 template — let user pre-set typical category items + amounts in `/settings` so the month form starts pre-filled (design pending)
 - [ ] Deploy to Vercel
 
 **Session context:**
@@ -923,7 +924,8 @@ supabase/.temp/         — local Supabase temp files
 - [x] Dashboard page working (projection + real record state)
 - [x] Month update page working with live preview
 - [x] History page with recharts chart + summary stats
-- [ ] Dark / light mode manual toggle (persisted in localStorage)
+- [x] Dark / light mode manual toggle (persisted in localStorage)
+- [ ] Default 浮動支出 template (configured in /settings, seeds /month/[ym] form)
 - [ ] Deployed to Vercel
 - [ ] Custom domain (optional)
 
