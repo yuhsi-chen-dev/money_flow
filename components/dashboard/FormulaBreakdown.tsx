@@ -1,12 +1,17 @@
 import { Card } from '@/components/ui/Card'
 import { cn, formatCurrency } from '@/lib/utils'
-import type { FixedExpenseItem, MonthCalculation } from '@/types'
+import type {
+  FixedExpenseItem,
+  MonthCalculation,
+  VariableItem,
+} from '@/types'
 
 interface Props {
   calc: MonthCalculation
   monthlyIncome: number
   bonus: number
   fixedExpenses: FixedExpenseItem[]
+  variableItems: VariableItem[]
 }
 
 export function FormulaBreakdown({
@@ -14,6 +19,7 @@ export function FormulaBreakdown({
   monthlyIncome,
   bonus,
   fixedExpenses,
+  variableItems,
 }: Props) {
   return (
     <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -44,7 +50,24 @@ export function FormulaBreakdown({
         value={calc.variableTotal}
         muted={calc.isProjection}
         placeholder={calc.isProjection ? '尚未輸入' : undefined}
-      />
+      >
+        {!calc.isProjection && variableItems.length > 0 && (
+          <details className="group mt-2">
+            <summary className="cursor-pointer list-none text-xs text-[var(--color-text-tertiary)] transition-colors hover:text-[var(--color-text-secondary)]">
+              展開明細 ({variableItems.length})
+            </summary>
+            <ul className="mt-2 flex flex-col gap-1">
+              {variableItems.map((item) => (
+                <Row
+                  key={item.id}
+                  label={item.category || '—'}
+                  value={item.amount}
+                />
+              ))}
+            </ul>
+          </details>
+        )}
+      </StatCard>
 
       <StatCard label="總儲蓄" value={calc.totalSavings} />
 

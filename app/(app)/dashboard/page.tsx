@@ -70,13 +70,14 @@ export default async function DashboardPage({ searchParams }: PageProps) {
         monthlyIncome={settings.monthlyIncome}
         bonus={record?.bonus ?? 0}
         fixedExpenses={settings.fixedExpenses}
+        variableItems={record?.variableItems ?? []}
       />
       <div className="mt-12 flex justify-center">
         <Link
           href={`/month/${requestedYM}` as Route}
           className="inline-flex items-center justify-center rounded-full bg-[var(--color-accent)] px-6 py-2.5 text-sm font-medium text-white transition-all duration-200 hover:bg-[var(--color-accent-hover)] active:scale-[0.98]"
         >
-          更新{formatYM(requestedYM)}的浮動支出
+          更新{formatYM(requestedYM)}的收支
         </Link>
       </div>
     </PageWrapper>
