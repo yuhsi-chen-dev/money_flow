@@ -20,6 +20,8 @@
     "history": "History",
     "settings": "Settings",
     "signOut": "Sign out",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
     "theme": {
       "default": "Toggle theme",
       "toDark": "Switch to dark mode",
@@ -187,7 +189,8 @@
     "etf": {
       "title": "ETF (regular investment)",
       "hint": "Fixed monthly investment. Subtracted from total savings before extra savings.",
-      "label": "Monthly investment amount"
+      "label": "Monthly investment amount",
+      "placeholder": "e.g., 5000"
     },
     "fixed": {
       "title": "Fixed expenses",

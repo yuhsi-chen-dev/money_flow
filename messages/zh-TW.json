@@ -20,6 +20,8 @@
     "history": "歷史",
     "settings": "設定",
     "signOut": "登出",
+    "openMenu": "開啟選單",
+    "closeMenu": "關閉選單",
     "theme": {
       "default": "切換主題",
       "toDark": "切換為暗黑模式",
@@ -187,7 +189,8 @@
     "etf": {
       "title": "ETF 定期定額",
       "hint": "每月固定投資金額，從總儲蓄中扣除後才算額外儲蓄。",
-      "label": "每月固定投資金額"
+      "label": "每月固定投資金額",
+      "placeholder": "例如 5000"
     },
     "fixed": {
       "title": "固定支出",
