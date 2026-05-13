@@ -34,6 +34,25 @@
     "googleLoading": "正在前往 Google…",
     "googleError": "登入失敗，請稍後再試"
   },
+  "welcome": {
+    "tagline": "清楚知道這個月多存了多少",
+    "cards": {
+      "formula": {
+        "title": "一個公式，搞懂一切",
+        "equation": "儲蓄 = 收入 − 固定支出 − 浮動支出",
+        "body": "靈感來自 Nick Maggiulli《持續買進》。重點不在花了多少，而在剩下多少。"
+      },
+      "different": {
+        "title": "不是另一個分類記帳 app",
+        "body": "不要求你每天輸入每一筆消費。一個月只要在月底花 30 秒，輸入這個月的浮動支出總額即可。"
+      },
+      "extra": {
+        "title": "你真正多存了多少",
+        "body": "ETF 定期定額是「pay yourself first」— 強制儲蓄不能少。扣掉固定支出、浮動支出、ETF 之後，剩下的就是「額外儲蓄」— 這個 app 唯一在乎的數字。"
+      }
+    },
+    "cta": "開始設定"
+  },
   "dashboard": {
     "monthSelector": {
       "label": "月份切換",

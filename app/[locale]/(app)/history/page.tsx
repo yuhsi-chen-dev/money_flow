@@ -55,10 +55,7 @@ export default async function HistoryPage({ params, searchParams }: PageProps) {
     .maybeSingle()
 
   if (!settingsRow) {
-    redirect({
-      href: { pathname: '/settings', query: { reason: 'onboard' } },
-      locale: params.locale,
-    })
+    redirect({ href: '/welcome', locale: params.locale })
     return null
   }
 

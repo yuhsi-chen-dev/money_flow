@@ -34,6 +34,25 @@
     "googleLoading": "Redirecting to Google…",
     "googleError": "Sign-in failed, please try again"
   },
+  "welcome": {
+    "tagline": "Know exactly how much extra you saved this month",
+    "cards": {
+      "formula": {
+        "title": "One formula, everything follows",
+        "equation": "Savings = Income − Fixed − Variable",
+        "body": "Inspired by Nick Maggiulli's Just Keep Buying. What matters isn't where it went — it's what's left."
+      },
+      "different": {
+        "title": "Not another category-tracking app",
+        "body": "You don't have to log every coffee. Spend 30 seconds at month-end entering your total variable expenses — that's it."
+      },
+      "extra": {
+        "title": "How much extra you actually saved",
+        "body": "ETF auto-investment is \"pay yourself first\" — fixed and non-negotiable. After fixed, variable, and ETF, what's left is Extra Savings — the one number this app cares about."
+      }
+    },
+    "cta": "Start setup"
+  },
   "dashboard": {
     "monthSelector": {
       "label": "Month switcher",
