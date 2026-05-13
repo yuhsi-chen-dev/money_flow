@@ -10,7 +10,7 @@ import { useToast } from '@/components/ui/Toast'
 import { PageWrapper } from '@/components/layout/PageWrapper'
 import { useSettings } from '@/hooks/useSettings'
 import { calculateMonth, getTotalFixed } from '@/lib/finance'
-import { DEFAULT_CATEGORIES, ETF_AMOUNT } from '@/lib/constants'
+import { DEFAULT_CATEGORIES } from '@/lib/constants'
 import { cn, formatCurrency } from '@/lib/utils'
 import type { FixedExpenseItem, Locale, UserSettings, VariableItem } from '@/types'
 
@@ -42,7 +42,7 @@ export default function SettingsPage() {
   const isOnboarding = searchParams.get('reason') === 'onboard'
 
   const [monthlyIncome, setMonthlyIncome] = useState('')
-  const [etfAmount, setEtfAmount] = useState(String(ETF_AMOUNT))
+  const [etfAmount, setEtfAmount] = useState('')
   const [expenses, setExpenses] = useState<FixedExpenseItem[]>([])
   const [defaultItems, setDefaultItems] = useState<VariableItem[]>([])
   const [saving, setSaving] = useState(false)
