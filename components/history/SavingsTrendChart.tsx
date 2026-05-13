@@ -11,8 +11,9 @@ import {
   YAxis,
   type TooltipProps,
 } from 'recharts'
+import { useLocale, useTranslations } from 'next-intl'
 import { formatCurrency, formatYM } from '@/lib/utils'
-import type { HistoryMonth } from '@/types'
+import type { HistoryMonth, Locale } from '@/types'
 
 interface Props {
   months: HistoryMonth[]
@@ -30,9 +31,9 @@ interface ChartDatum {
   extraSavings: number
 }
 
-function toChartData(months: HistoryMonth[]): ChartDatum[] {
+function toChartData(months: HistoryMonth[], shortMonth: (m: number) => string): ChartDatum[] {
   return months.map(({ ym, calc }) => ({
-    monthLabel: `${parseInt(ym.slice(5), 10)}月`,
+    monthLabel: shortMonth(parseInt(ym.slice(5), 10)),
     ym,
     hasRecord: !calc.isProjection,
     totalIncome: calc.totalIncome,
@@ -45,7 +46,20 @@ function toChartData(months: HistoryMonth[]): ChartDatum[] {
 }
 
 export function SavingsTrendChart({ months }: Props) {
-  const data = toChartData(months)
+  const t = useTranslations('history.chart')
+  const tPreview = useTranslations('preview')
+  const tCards = useTranslations('dashboard.cards')
+  const locale = useLocale() as Locale
+
+  const shortMonth = (m: number): string => {
+    if (locale === 'en') {
+      const date = new Date(2025, m - 1, 1)
+      return date.toLocaleString('en-US', { month: 'short' })
+    }
+    return t('monthLabel', { month: m })
+  }
+
+  const data = toChartData(months, shortMonth)
 
   return (
     <div className="h-72 w-full md:h-80">
@@ -73,7 +87,20 @@ export function SavingsTrendChart({ months }: Props) {
           />
           <Tooltip
             cursor={{ fill: 'var(--color-bg-hover)', opacity: 0.4 }}
-            content={<ChartTooltip />}
+            content={
+              <ChartTooltip
+                locale={locale}
+                noRecordLabel={t('noRecord')}
+                labels={{
+                  income: tPreview('income'),
+                  fixed: tPreview('fixed'),
+                  variable: tPreview('variable'),
+                  totalSavings: tCards('totalSavings'),
+                  etf: tPreview('etf'),
+                  extra: tPreview('extra'),
+                }}
+              />
+            }
           />
           <Bar dataKey="extraSavings" radius={[6, 6, 0, 0]}>
             {data.map((d) => (
@@ -95,7 +122,26 @@ export function SavingsTrendChart({ months }: Props) {
   )
 }
 
-function ChartTooltip({ active, payload }: TooltipProps<number, string>) {
+interface ChartTooltipProps extends TooltipProps<number, string> {
+  locale: Locale
+  noRecordLabel: string
+  labels: {
+    income: string
+    fixed: string
+    variable: string
+    totalSavings: string
+    etf: string
+    extra: string
+  }
+}
+
+function ChartTooltip({
+  active,
+  payload,
+  locale,
+  noRecordLabel,
+  labels,
+}: ChartTooltipProps) {
   if (!active || !payload?.length) return null
   const d = payload[0]?.payload as ChartDatum | undefined
   if (!d) return null
@@ -103,21 +149,21 @@ function ChartTooltip({ active, payload }: TooltipProps<number, string>) {
   return (
     <div className="rounded-xl border border-[var(--color-border-strong)] bg-[var(--color-bg-card)] px-4 py-3 text-xs shadow-xl backdrop-blur-xl">
       <div className="mb-2 font-semibold text-[var(--color-text-primary)]">
-        {formatYM(d.ym)}
+        {formatYM(d.ym, locale)}
       </div>
       {d.hasRecord ? (
         <dl className="flex flex-col gap-1">
-          <Row label="收入" value={d.totalIncome} />
-          <Row label="固定支出" value={-d.totalFixed} />
-          <Row label="浮動支出" value={-d.variableTotal} />
-          <Row label="總儲蓄" value={d.totalSavings} />
-          <Row label="ETF" value={-d.etfAmount} />
+          <Row label={labels.income} value={d.totalIncome} locale={locale} />
+          <Row label={labels.fixed} value={-d.totalFixed} locale={locale} />
+          <Row label={labels.variable} value={-d.variableTotal} locale={locale} />
+          <Row label={labels.totalSavings} value={d.totalSavings} locale={locale} />
+          <Row label={labels.etf} value={-d.etfAmount} locale={locale} />
           <div className="mt-1 border-t border-[var(--color-border)] pt-1">
-            <Row label="額外儲蓄" value={d.extraSavings} bold />
+            <Row label={labels.extra} value={d.extraSavings} locale={locale} bold />
           </div>
         </dl>
       ) : (
-        <div className="text-[var(--color-text-tertiary)]">尚未紀錄</div>
+        <div className="text-[var(--color-text-tertiary)]">{noRecordLabel}</div>
       )}
     </div>
   )
@@ -126,10 +172,12 @@ function ChartTooltip({ active, payload }: TooltipProps<number, string>) {
 function Row({
   label,
   value,
+  locale,
   bold,
 }: {
   label: string
   value: number
+  locale: Locale
   bold?: boolean
 }) {
   return (
@@ -142,7 +190,7 @@ function Row({
             : 'tabular-nums text-[var(--color-text-primary)]'
         }
       >
-        {formatCurrency(value)}
+        {formatCurrency(value, locale)}
       </dd>
     </div>
   )

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useTranslations } from 'next-intl'
 
 type Theme = 'light' | 'dark'
 
@@ -16,6 +17,7 @@ function readCurrentTheme(): Theme {
 }
 
 export function ThemeToggle() {
+  const t = useTranslations('nav.theme')
   const [theme, setTheme] = useState<Theme | null>(null)
 
   useEffect(() => {
@@ -36,10 +38,10 @@ export function ThemeToggle() {
   const showSun = theme === 'light'
   const label =
     theme === null
-      ? '切換主題'
+      ? t('default')
       : showSun
-        ? '切換為暗黑模式'
-        : '切換為明亮模式'
+        ? t('toDark')
+        : t('toLight')
 
   return (
     <button

@@ -1,16 +1,21 @@
-import { redirect } from 'next/navigation'
+import { redirect } from '@/i18n/navigation'
 import { Navbar } from '@/components/layout/Navbar'
 import { ToastProvider } from '@/components/ui/Toast'
 import { createServerClient } from '@/lib/supabase/server'
 
-export default async function AppLayout({ children }: { children: React.ReactNode }) {
+interface Props {
+  children: React.ReactNode
+  params: { locale: string }
+}
+
+export default async function AppLayout({ children, params }: Props) {
   const supabase = createServerClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()
 
   if (!user) {
-    redirect('/login')
+    redirect({ href: '/login', locale: params.locale })
   }
 
   return (

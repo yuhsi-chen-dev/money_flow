@@ -1,0 +1,206 @@
+{
+  "meta": {
+    "title": "MoneyFlow — 清楚知道這個月多存了多少",
+    "description": "個人理財追蹤工具。儲蓄 = 收入 - 固定支出 - 浮動支出。"
+  },
+  "common": {
+    "appName": "MoneyFlow",
+    "tagline": "清楚知道這個月多存了多少",
+    "loading": "載入中…",
+    "saving": "儲存中…",
+    "save": "儲存",
+    "saveError": "儲存失敗，請再試一次",
+    "delete": "刪除",
+    "remove": "移除",
+    "collapse": "收起",
+    "edit": "編輯"
+  },
+  "nav": {
+    "dashboard": "總覽",
+    "history": "歷史",
+    "settings": "設定",
+    "signOut": "登出",
+    "theme": {
+      "default": "切換主題",
+      "toDark": "切換為暗黑模式",
+      "toLight": "切換為明亮模式"
+    },
+    "locale": {
+      "switchTo": "切換語言"
+    }
+  },
+  "login": {
+    "google": "使用 Google 登入",
+    "googleLoading": "正在前往 Google…",
+    "googleError": "登入失敗，請稍後再試"
+  },
+  "dashboard": {
+    "monthSelector": {
+      "label": "月份切換",
+      "prev": "前一個月：{month}",
+      "next": "下一個月：{month}"
+    },
+    "hero": {
+      "label": "本月額外儲蓄",
+      "badgeRecorded": "已更新",
+      "badgeProjection": "預估中"
+    },
+    "cards": {
+      "income": "收入",
+      "monthlyIncome": "月薪",
+      "bonus": "獎金",
+      "fixed": "固定支出",
+      "variable": "浮動支出",
+      "totalSavings": "總儲蓄",
+      "etf": "ETF 定期定額",
+      "extra": "額外儲蓄",
+      "expandDetails": "展開明細 ({count})",
+      "noData": "尚未輸入",
+      "notConfigured": "尚未設定",
+      "empty": "—"
+    },
+    "ctaUpdate": "更新{month}的收支"
+  },
+  "month": {
+    "backToOverview": "返回總覽",
+    "headerTitle": "更新 {month}",
+    "subtitle": "記錄這個月的收入與支出，儲存後回到總覽。",
+    "loadError": "無法載入紀錄：{message}",
+    "saveSuccess": "已儲存 ✓",
+    "sections": {
+      "income": {
+        "title": "本月收入",
+        "hint": "月薪固定，獎金為這個月的一次性額外收入。"
+      },
+      "expense": {
+        "title": "本月支出",
+        "hint": "填入這個月的浮動支出總額，可選擇展開分類明細。"
+      }
+    },
+    "salary": {
+      "title": "月薪",
+      "hint": "於設定頁調整"
+    },
+    "bonus": {
+      "title": "獎金",
+      "hint": "這個月的一次性額外收入。",
+      "placeholder": "例如 5000",
+      "addButton": "＋ 新增獎金"
+    },
+    "variable": {
+      "title": "浮動支出",
+      "hintWithItems": "{month} 的總額由下方分類明細加總而來。",
+      "hintFreeform": "{month} 的總花費（必填）。",
+      "placeholder": "例如 12000",
+      "readonlyHint": "展開分類明細時，總額自動等於各項加總",
+      "requiredError": "請輸入金額",
+      "requiredToast": "請輸入浮動支出"
+    },
+    "items": {
+      "title": "分類明細",
+      "hint": "記下花在哪些類別。打開時，浮動支出總額會自動跟隨各項加總。",
+      "addButton": "＋ 新增分類明細",
+      "categoryPlaceholder": "分類（食費 / 交通 …）",
+      "categoryEmpty": "選填，逐項記錄這個月花在哪些分類。",
+      "totalLabel": "分類合計",
+      "addCategory": "＋ 新增分類"
+    },
+    "note": {
+      "title": "備註",
+      "hint": "選填，給自己看的提醒（最多 {max} 字）。",
+      "placeholder": "例如 本月旅遊花費較多"
+    }
+  },
+  "preview": {
+    "title": "即時預覽",
+    "income": "收入",
+    "fixed": "固定支出",
+    "variable": "浮動支出",
+    "etf": "ETF",
+    "extra": "額外儲蓄"
+  },
+  "history": {
+    "title": "歷史趨勢",
+    "subtitle": "每月額外儲蓄的長期變化。",
+    "yearSelector": {
+      "label": "年份切換",
+      "prev": "前一年：{year}",
+      "next": "下一年：{year}",
+      "current": "{year} 年"
+    },
+    "summary": {
+      "yearTotal": "年度額外儲蓄",
+      "monthAverage": "月平均",
+      "bestMonth": "最佳月份",
+      "worstMonth": "最差月份",
+      "empty": "—"
+    },
+    "table": {
+      "month": "月份",
+      "income": "收入",
+      "fixed": "固定支出",
+      "variable": "浮動支出",
+      "totalSavings": "總儲蓄",
+      "etf": "ETF",
+      "extra": "額外儲蓄",
+      "actions": "操作",
+      "edit": "編輯",
+      "empty": "—",
+      "noRecords": "這一年還沒有任何紀錄。回到總覽更新本月浮動支出，月底就會出現在這裡。"
+    },
+    "chart": {
+      "monthLabel": "{month}月",
+      "noRecord": "尚未紀錄"
+    }
+  },
+  "settings": {
+    "title": "設定",
+    "subtitle": "設定一次，每月只需更新浮動支出。",
+    "onboardBanner": "請先完成設定，再回到總覽查看本月狀況。",
+    "loadError": "無法載入設定：{message}",
+    "saveSuccess": "設定已儲存 ✓",
+    "income": {
+      "title": "收入",
+      "hint": "每月固定到帳的薪資金額。",
+      "label": "月固定收入",
+      "placeholder": "例如 80000"
+    },
+    "etf": {
+      "title": "ETF 定期定額",
+      "hint": "每月固定投資金額，從總儲蓄中扣除後才算額外儲蓄。",
+      "label": "每月固定投資金額"
+    },
+    "fixed": {
+      "title": "固定支出",
+      "hint": "每月一定會發生的開銷，例如房租、訂閱、電信。",
+      "total": "合計",
+      "empty": "還沒有任何固定支出。",
+      "namePlaceholder": "名稱（例如 房租）",
+      "addButton": "＋ 新增固定支出"
+    },
+    "defaults": {
+      "title": "預設浮動支出範本",
+      "hint": "每月一打開更新頁就自動帶入這些分類，再依實際花費微調即可。",
+      "total": "範本合計",
+      "empty": "還沒有範本。不設定也沒關係，月底依然可以手動填寫。",
+      "categoryPlaceholder": "分類（例如 食費）",
+      "addButton": "＋ 新增分類"
+    },
+    "preview": {
+      "title": "預覽",
+      "hint": "若本月沒有額外獎金，也沒有任何浮動支出。",
+      "income": "收入",
+      "fixed": "固定支出",
+      "etf": "ETF",
+      "extra": "額外儲蓄"
+    }
+  },
+  "categories": {
+    "食費": "食費",
+    "交通": "交通",
+    "娛樂": "娛樂",
+    "購物": "購物",
+    "醫療": "醫療",
+    "其他": "其他"
+  }
+}

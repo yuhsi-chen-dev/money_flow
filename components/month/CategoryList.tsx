@@ -1,10 +1,11 @@
 'use client'
 
+import { useLocale, useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { DEFAULT_CATEGORIES } from '@/lib/constants'
 import { formatCurrency } from '@/lib/utils'
-import type { VariableItem } from '@/types'
+import type { Locale, VariableItem } from '@/types'
 
 const DATALIST_ID = 'default-categories'
 
@@ -25,6 +26,10 @@ function newItem(): VariableItem {
 }
 
 export function CategoryList({ items, onChange }: Props) {
+  const t = useTranslations('month.items')
+  const tCat = useTranslations('categories')
+  const tCommon = useTranslations('common')
+  const locale = useLocale() as Locale
   const itemsTotal = items.reduce((sum, i) => sum + i.amount, 0)
 
   function add() {
@@ -48,13 +53,13 @@ export function CategoryList({ items, onChange }: Props) {
     <div>
       <datalist id={DATALIST_ID}>
         {DEFAULT_CATEGORIES.map((c) => (
-          <option key={c} value={c} />
+          <option key={c} value={c} label={tCat.has(c) ? tCat(c) : c} />
         ))}
       </datalist>
 
       {items.length === 0 ? (
         <p className="text-xs text-[var(--color-text-tertiary)]">
-          選填，逐項記錄這個月花在哪些分類。
+          {t('categoryEmpty')}
         </p>
       ) : (
         <ul className="flex flex-col gap-3">
@@ -64,7 +69,7 @@ export function CategoryList({ items, onChange }: Props) {
                 <Input
                   name={`category-${item.id}`}
                   list={DATALIST_ID}
-                  placeholder="分類（食費 / 交通 …）"
+                  placeholder={t('categoryPlaceholder')}
                   value={item.category}
                   onChange={(e) => updateCategory(item.id, e.target.value)}
                 />
@@ -82,7 +87,7 @@ export function CategoryList({ items, onChange }: Props) {
               <button
                 type="button"
                 onClick={() => remove(item.id)}
-                aria-label="刪除"
+                aria-label={tCommon('delete')}
                 className="mt-1 inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-[var(--color-text-tertiary)] transition-all duration-200 hover:bg-[var(--color-bg-hover)] hover:text-[var(--color-danger)]"
               >
                 ×
@@ -94,13 +99,13 @@ export function CategoryList({ items, onChange }: Props) {
 
       <div className="mt-4 flex items-center justify-between gap-4">
         <Button variant="secondary" size="sm" onClick={add}>
-          ＋ 新增分類
+          {t('addCategory')}
         </Button>
         {items.length > 0 && (
           <span className="text-xs tabular-nums text-[var(--color-text-secondary)]">
-            分類合計：
+            {t('totalLabel')}：
             <span className="ml-1 font-semibold text-[var(--color-text-primary)]">
-              {formatCurrency(itemsTotal)}
+              {formatCurrency(itemsTotal, locale)}
             </span>
           </span>
         )}

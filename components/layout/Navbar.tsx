@@ -1,20 +1,23 @@
 'use client'
 
-import Link from 'next/link'
-import { usePathname, useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
+import { Link, usePathname, useRouter } from '@/i18n/navigation'
 import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
+import { LocaleToggle } from '@/components/layout/LocaleToggle'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
 
-const links = [
-  { href: '/dashboard', label: '總覽' },
-  { href: '/history', label: '歷史' },
-  { href: '/settings', label: '設定' },
-] as const
-
 export function Navbar() {
+  const t = useTranslations('nav')
+  const tCommon = useTranslations('common')
   const pathname = usePathname()
   const router = useRouter()
+
+  const links = [
+    { href: '/dashboard', label: t('dashboard') },
+    { href: '/history', label: t('history') },
+    { href: '/settings', label: t('settings') },
+  ] as const
 
   async function handleSignOut() {
     const supabase = createClient()
@@ -29,7 +32,7 @@ export function Navbar() {
         href="/dashboard"
         className="font-display text-base font-semibold tracking-tight text-[var(--color-text-primary)]"
       >
-        MoneyFlow
+        {tCommon('appName')}
       </Link>
 
       <div className="flex items-center gap-1">
@@ -50,14 +53,15 @@ export function Navbar() {
             </Link>
           )
         })}
-        <div className="ml-2">
+        <div className="ml-2 flex items-center gap-1">
+          <LocaleToggle />
           <ThemeToggle />
         </div>
         <button
           onClick={handleSignOut}
           className="rounded-full px-3 py-1.5 text-sm text-[var(--color-text-tertiary)] transition-all duration-200 hover:text-[var(--color-text-primary)]"
         >
-          登出
+          {t('signOut')}
         </button>
       </div>
     </nav>

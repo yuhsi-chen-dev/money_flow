@@ -1,5 +1,8 @@
+import { useTranslations } from 'next-intl'
+import { useLocale } from 'next-intl'
 import { Badge } from '@/components/ui/Badge'
 import { cn, formatCurrency } from '@/lib/utils'
+import type { Locale } from '@/types'
 
 interface Props {
   extraSavings: number
@@ -7,16 +10,18 @@ interface Props {
 }
 
 export function SavingHero({ extraSavings, isProjection }: Props) {
+  const t = useTranslations('dashboard.hero')
+  const locale = useLocale() as Locale
   const positive = extraSavings >= 0
 
   return (
     <section className="flex flex-col items-center py-10 text-center md:py-16">
       <div className="flex items-center gap-3">
         <span className="text-sm text-[var(--color-text-secondary)]">
-          本月額外儲蓄
+          {t('label')}
         </span>
         <Badge variant={isProjection ? 'neutral' : 'success'}>
-          {isProjection ? '預估中' : '已更新'}
+          {isProjection ? t('badgeProjection') : t('badgeRecorded')}
         </Badge>
       </div>
       <div
@@ -25,7 +30,7 @@ export function SavingHero({ extraSavings, isProjection }: Props) {
           positive ? 'text-[var(--color-success)]' : 'text-[var(--color-danger)]'
         )}
       >
-        {formatCurrency(extraSavings)}
+        {formatCurrency(extraSavings, locale)}
       </div>
     </section>
   )

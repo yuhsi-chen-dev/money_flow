@@ -1,17 +1,18 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useLocale, useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
 import { useToast } from '@/components/ui/Toast'
 import { CategoryList } from '@/components/month/CategoryList'
 import { LivePreview } from '@/components/month/LivePreview'
+import { useRouter } from '@/i18n/navigation'
 import { useMonthlyRecord } from '@/hooks/useMonthlyRecord'
 import { calculateMonth } from '@/lib/finance'
 import { formatCurrency, formatYM } from '@/lib/utils'
-import type { MonthlyRecord, UserSettings, VariableItem } from '@/types'
+import type { Locale, MonthlyRecord, UserSettings, VariableItem } from '@/types'
 
 const NOTE_MAX = 200
 
@@ -39,6 +40,10 @@ function sumItems(items: VariableItem[]): number {
 }
 
 export function VariableExpenseForm({ ym, settings }: Props) {
+  const t = useTranslations('month')
+  const tCommon = useTranslations('common')
+  const locale = useLocale() as Locale
+  const monthLabel = formatYM(ym, locale)
   const router = useRouter()
   const { toast } = useToast()
   const { record, loading, error, save } = useMonthlyRecord(ym)
@@ -101,7 +106,7 @@ export function VariableExpenseForm({ ym, settings }: Props) {
     if (saving) return
     if (!itemsOpen && variableTotal.trim() === '') {
       setShowRequiredError(true)
-      toast('請輸入浮動支出', 'error')
+      toast(t('variable.requiredToast'), 'error')
       return
     }
     setSaving(true)
@@ -117,11 +122,11 @@ export function VariableExpenseForm({ ym, settings }: Props) {
         variableItems: cleanedItems,
         note: note.trim() || undefined,
       })
-      toast('已儲存 ✓', 'success')
+      toast(t('saveSuccess'), 'success')
       router.push('/dashboard')
       router.refresh()
     } catch (e) {
-      const msg = e instanceof Error ? e.message : '儲存失敗，請再試一次'
+      const msg = e instanceof Error ? e.message : tCommon('saveError')
       toast(msg, 'error')
     } finally {
       setSaving(false)
@@ -131,7 +136,7 @@ export function VariableExpenseForm({ ym, settings }: Props) {
   if (loading) {
     return (
       <div className="flex min-h-[40vh] items-center justify-center text-sm text-[var(--color-text-tertiary)]">
-        載入中…
+        {tCommon('loading')}
       </div>
     )
   }
@@ -141,28 +146,25 @@ export function VariableExpenseForm({ ym, settings }: Props) {
       <div className="flex flex-col gap-8">
         {error && (
           <div className="rounded-xl border border-[var(--color-danger-muted)] bg-[var(--color-danger-muted)] px-4 py-3 text-sm text-[var(--color-danger)]">
-            無法載入紀錄：{error}
+            {t('loadError', { message: error })}
           </div>
         )}
 
         <section className="flex flex-col gap-4">
-          <SectionHeader
-            title="本月收入"
-            hint="月薪固定，獎金為這個月的一次性額外收入。"
-          />
+          <SectionHeader title={t('sections.income.title')} hint={t('sections.income.hint')} />
 
           <Card>
             <div className="flex items-baseline justify-between gap-3">
               <div>
                 <h3 className="text-sm font-medium text-[var(--color-text-secondary)]">
-                  月薪
+                  {t('salary.title')}
                 </h3>
                 <p className="mt-1 text-xs text-[var(--color-text-tertiary)]">
-                  於設定頁調整
+                  {t('salary.hint')}
                 </p>
               </div>
               <div className="text-2xl font-semibold tabular-nums tracking-tight text-[var(--color-text-primary)]">
-                {formatCurrency(settings.monthlyIncome)}
+                {formatCurrency(settings.monthlyIncome, locale)}
               </div>
             </div>
           </Card>
@@ -172,7 +174,7 @@ export function VariableExpenseForm({ ym, settings }: Props) {
               <>
                 <div className="mb-1 flex items-baseline justify-between">
                   <h3 className="text-lg font-semibold text-[var(--color-text-primary)]">
-                    獎金
+                    {t('bonus.title')}
                   </h3>
                   <button
                     type="button"
@@ -182,17 +184,17 @@ export function VariableExpenseForm({ ym, settings }: Props) {
                     }}
                     className="text-xs text-[var(--color-text-tertiary)] transition-colors hover:text-[var(--color-text-secondary)]"
                   >
-                    移除
+                    {tCommon('remove')}
                   </button>
                 </div>
                 <p className="mb-5 text-xs text-[var(--color-text-tertiary)]">
-                  這個月的一次性額外收入。
+                  {t('bonus.hint')}
                 </p>
                 <Input
                   name="bonus"
                   type="text"
                   inputMode="numeric"
-                  placeholder="例如 5000"
+                  placeholder={t('bonus.placeholder')}
                   value={bonus}
                   onChange={(e) => setBonus(e.target.value)}
                 />
@@ -203,32 +205,29 @@ export function VariableExpenseForm({ ym, settings }: Props) {
                 size="sm"
                 onClick={() => setBonusOpen(true)}
               >
-                ＋ 新增獎金
+                {t('bonus.addButton')}
               </Button>
             )}
           </Card>
         </section>
 
         <section className="flex flex-col gap-4">
-          <SectionHeader
-            title="本月支出"
-            hint="填入這個月的浮動支出總額，可選擇展開分類明細。"
-          />
+          <SectionHeader title={t('sections.expense.title')} hint={t('sections.expense.hint')} />
 
           <Card>
             <h3 className="mb-1 text-lg font-semibold text-[var(--color-text-primary)]">
-              浮動支出
+              {t('variable.title')}
             </h3>
             <p className="mb-5 text-xs text-[var(--color-text-tertiary)]">
               {itemsOpen
-                ? `${formatYM(ym)} 的總額由下方分類明細加總而來。`
-                : `${formatYM(ym)} 的總花費（必填）。`}
+                ? t('variable.hintWithItems', { month: monthLabel })
+                : t('variable.hintFreeform', { month: monthLabel })}
             </p>
             <Input
               name="variableTotal"
               type="text"
               inputMode="numeric"
-              placeholder="例如 12000"
+              placeholder={t('variable.placeholder')}
               autoFocus={!itemsOpen}
               readOnly={itemsOpen}
               value={itemsOpen ? String(itemsSum) : variableTotal}
@@ -237,10 +236,8 @@ export function VariableExpenseForm({ ym, settings }: Props) {
                 setVariableTotal(e.target.value)
                 if (showRequiredError) setShowRequiredError(false)
               }}
-              error={showRequiredError ? '請輸入金額' : undefined}
-              hint={
-                itemsOpen ? '展開分類明細時，總額自動等於各項加總' : undefined
-              }
+              error={showRequiredError ? t('variable.requiredError') : undefined}
+              hint={itemsOpen ? t('variable.readonlyHint') : undefined}
               className={itemsOpen ? 'cursor-not-allowed opacity-70' : undefined}
             />
           </Card>
@@ -250,18 +247,18 @@ export function VariableExpenseForm({ ym, settings }: Props) {
               <>
                 <div className="mb-1 flex items-baseline justify-between">
                   <h3 className="text-lg font-semibold text-[var(--color-text-primary)]">
-                    分類明細
+                    {t('items.title')}
                   </h3>
                   <button
                     type="button"
                     onClick={closeItemsPanel}
                     className="text-xs text-[var(--color-text-tertiary)] transition-colors hover:text-[var(--color-text-secondary)]"
                   >
-                    收起
+                    {tCommon('collapse')}
                   </button>
                 </div>
                 <p className="mb-5 text-xs text-[var(--color-text-tertiary)]">
-                  記下花在哪些類別。打開時，浮動支出總額會自動跟隨各項加總。
+                  {t('items.hint')}
                 </p>
                 <CategoryList items={items} onChange={setItems} />
               </>
@@ -271,7 +268,7 @@ export function VariableExpenseForm({ ym, settings }: Props) {
                 size="sm"
                 onClick={() => setItemsOpen(true)}
               >
-                ＋ 新增分類明細
+                {t('items.addButton')}
               </Button>
             )}
           </Card>
@@ -282,10 +279,10 @@ export function VariableExpenseForm({ ym, settings }: Props) {
             htmlFor="note"
             className="mb-1 block text-lg font-semibold text-[var(--color-text-primary)]"
           >
-            備註
+            {t('note.title')}
           </label>
           <p className="mb-5 text-xs text-[var(--color-text-tertiary)]">
-            選填，給自己看的提醒（最多 {NOTE_MAX} 字）。
+            {t('note.hint', { max: NOTE_MAX })}
           </p>
           <textarea
             id="note"
@@ -294,7 +291,7 @@ export function VariableExpenseForm({ ym, settings }: Props) {
             rows={3}
             value={note}
             onChange={(e) => setNote(e.target.value)}
-            placeholder="例如 本月旅遊花費較多"
+            placeholder={t('note.placeholder')}
             className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-3 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)] transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
           />
           <div className="mt-1 text-right text-xs text-[var(--color-text-tertiary)] tabular-nums">
@@ -304,7 +301,7 @@ export function VariableExpenseForm({ ym, settings }: Props) {
 
         <div className="flex justify-end">
           <Button onClick={handleSave} disabled={saving}>
-            {saving ? '儲存中…' : '儲存'}
+            {saving ? tCommon('saving') : tCommon('save')}
           </Button>
         </div>
       </div>

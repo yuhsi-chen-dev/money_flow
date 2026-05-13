@@ -2,6 +2,7 @@
 
 import { useMemo, useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
+import { useLocale, useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
@@ -11,7 +12,7 @@ import { useSettings } from '@/hooks/useSettings'
 import { calculateMonth, getTotalFixed } from '@/lib/finance'
 import { DEFAULT_CATEGORIES, ETF_AMOUNT } from '@/lib/constants'
 import { cn, formatCurrency } from '@/lib/utils'
-import type { FixedExpenseItem, UserSettings, VariableItem } from '@/types'
+import type { FixedExpenseItem, Locale, UserSettings, VariableItem } from '@/types'
 
 const DEFAULT_VARIABLE_DATALIST_ID = 'settings-default-categories'
 
@@ -31,6 +32,10 @@ function newDefaultItem(): VariableItem {
 }
 
 export default function SettingsPage() {
+  const t = useTranslations('settings')
+  const tCommon = useTranslations('common')
+  const tCat = useTranslations('categories')
+  const locale = useLocale() as Locale
   const { settings, loading, error, save } = useSettings()
   const { toast } = useToast()
   const searchParams = useSearchParams()
@@ -132,9 +137,9 @@ export default function SettingsPage() {
       })
       setExpenses(cleanedExpenses)
       setDefaultItems(cleanedDefaults)
-      toast('設定已儲存 ✓', 'success')
+      toast(t('saveSuccess'), 'success')
     } catch (e) {
-      const msg = e instanceof Error ? e.message : '儲存失敗，請再試一次'
+      const msg = e instanceof Error ? e.message : tCommon('saveError')
       toast(msg, 'error')
     } finally {
       setSaving(false)
@@ -145,7 +150,7 @@ export default function SettingsPage() {
     return (
       <PageWrapper>
         <div className="flex min-h-[40vh] items-center justify-center text-sm text-[var(--color-text-tertiary)]">
-          載入中…
+          {tCommon('loading')}
         </div>
       </PageWrapper>
     )
@@ -155,39 +160,39 @@ export default function SettingsPage() {
     <PageWrapper>
       <header className="mb-10">
         <h1 className="font-display text-4xl font-bold tracking-tight text-[var(--color-text-primary)] md:text-5xl">
-          設定
+          {t('title')}
         </h1>
         <p className="mt-2 text-sm text-[var(--color-text-secondary)]">
-          設定一次，每月只需更新浮動支出。
+          {t('subtitle')}
         </p>
       </header>
 
       {isOnboarding && !settings && (
         <div className="mb-6 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-4 py-3 text-sm text-[var(--color-text-secondary)]">
-          請先完成設定，再回到總覽查看本月狀況。
+          {t('onboardBanner')}
         </div>
       )}
 
       {error && (
         <div className="mb-6 rounded-xl border border-[var(--color-danger-muted)] bg-[var(--color-danger-muted)] px-4 py-3 text-sm text-[var(--color-danger)]">
-          無法載入設定：{error}
+          {t('loadError', { message: error })}
         </div>
       )}
 
       <div className="flex flex-col gap-6">
         <Card>
           <h2 className="mb-1 text-lg font-semibold text-[var(--color-text-primary)]">
-            收入
+            {t('income.title')}
           </h2>
           <p className="mb-5 text-xs text-[var(--color-text-tertiary)]">
-            每月固定到帳的薪資金額。
+            {t('income.hint')}
           </p>
           <Input
-            label="月固定收入"
+            label={t('income.label')}
             name="monthlyIncome"
             type="text"
             inputMode="numeric"
-            placeholder="例如 80000"
+            placeholder={t('income.placeholder')}
             value={monthlyIncome}
             onChange={(e) => setMonthlyIncome(e.target.value)}
           />
@@ -195,13 +200,13 @@ export default function SettingsPage() {
 
         <Card>
           <h2 className="mb-1 text-lg font-semibold text-[var(--color-text-primary)]">
-            ETF 定期定額
+            {t('etf.title')}
           </h2>
           <p className="mb-5 text-xs text-[var(--color-text-tertiary)]">
-            每月固定投資金額，從總儲蓄中扣除後才算額外儲蓄。
+            {t('etf.hint')}
           </p>
           <Input
-            label="每月固定投資金額"
+            label={t('etf.label')}
             name="etfAmount"
             type="text"
             inputMode="numeric"
@@ -214,23 +219,23 @@ export default function SettingsPage() {
           <div className="mb-5 flex items-baseline justify-between gap-4">
             <div>
               <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">
-                固定支出
+                {t('fixed.title')}
               </h2>
               <p className="mt-1 text-xs text-[var(--color-text-tertiary)]">
-                每月一定會發生的開銷，例如房租、訂閱、電信。
+                {t('fixed.hint')}
               </p>
             </div>
             <span className="shrink-0 text-xs text-[var(--color-text-secondary)]">
-              合計：
+              {t('fixed.total')}：
               <span className="ml-1 font-semibold tabular-nums text-[var(--color-text-primary)]">
-                {formatCurrency(totalFixed)}
+                {formatCurrency(totalFixed, locale)}
               </span>
             </span>
           </div>
 
           {expenses.length === 0 ? (
             <div className="rounded-xl border border-dashed border-[var(--color-border)] px-4 py-10 text-center text-sm text-[var(--color-text-tertiary)]">
-              還沒有任何固定支出。
+              {t('fixed.empty')}
             </div>
           ) : (
             <ul className="flex flex-col gap-3">
@@ -239,7 +244,7 @@ export default function SettingsPage() {
                   <div className="flex-1">
                     <Input
                       name={`name-${item.id}`}
-                      placeholder="名稱（例如 房租）"
+                      placeholder={t('fixed.namePlaceholder')}
                       value={item.name}
                       onChange={(e) => updateExpenseName(item.id, e.target.value)}
                     />
@@ -257,7 +262,7 @@ export default function SettingsPage() {
                   <button
                     type="button"
                     onClick={() => removeExpense(item.id)}
-                    aria-label="刪除"
+                    aria-label={tCommon('delete')}
                     className="mt-1 inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-[var(--color-text-tertiary)] transition-all duration-200 hover:bg-[var(--color-bg-hover)] hover:text-[var(--color-danger)]"
                   >
                     ×
@@ -269,7 +274,7 @@ export default function SettingsPage() {
 
           <div className="mt-5">
             <Button variant="secondary" size="sm" onClick={addExpense}>
-              ＋ 新增固定支出
+              {t('fixed.addButton')}
             </Button>
           </div>
         </Card>
@@ -277,23 +282,23 @@ export default function SettingsPage() {
         <Card>
           <datalist id={DEFAULT_VARIABLE_DATALIST_ID}>
             {DEFAULT_CATEGORIES.map((c) => (
-              <option key={c} value={c} />
+              <option key={c} value={c} label={tCat.has(c) ? tCat(c) : c} />
             ))}
           </datalist>
           <div className="mb-5 flex items-baseline justify-between gap-4">
             <div>
               <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">
-                預設浮動支出範本
+                {t('defaults.title')}
               </h2>
               <p className="mt-1 text-xs text-[var(--color-text-tertiary)]">
-                每月一打開更新頁就自動帶入這些分類，再依實際花費微調即可。
+                {t('defaults.hint')}
               </p>
             </div>
             {defaultItems.length > 0 && (
               <span className="shrink-0 text-xs text-[var(--color-text-secondary)]">
-                範本合計：
+                {t('defaults.total')}：
                 <span className="ml-1 font-semibold tabular-nums text-[var(--color-text-primary)]">
-                  {formatCurrency(defaultItemsTotal)}
+                  {formatCurrency(defaultItemsTotal, locale)}
                 </span>
               </span>
             )}
@@ -301,7 +306,7 @@ export default function SettingsPage() {
 
           {defaultItems.length === 0 ? (
             <div className="rounded-xl border border-dashed border-[var(--color-border)] px-4 py-10 text-center text-sm text-[var(--color-text-tertiary)]">
-              還沒有範本。不設定也沒關係，月底依然可以手動填寫。
+              {t('defaults.empty')}
             </div>
           ) : (
             <ul className="flex flex-col gap-3">
@@ -314,7 +319,7 @@ export default function SettingsPage() {
                     <Input
                       name={`default-category-${item.id}`}
                       list={DEFAULT_VARIABLE_DATALIST_ID}
-                      placeholder="分類（例如 食費）"
+                      placeholder={t('defaults.categoryPlaceholder')}
                       value={item.category}
                       onChange={(e) =>
                         updateDefaultCategory(item.id, e.target.value)
@@ -336,7 +341,7 @@ export default function SettingsPage() {
                   <button
                     type="button"
                     onClick={() => removeDefaultItem(item.id)}
-                    aria-label="刪除"
+                    aria-label={tCommon('delete')}
                     className="mt-1 inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-[var(--color-text-tertiary)] transition-all duration-200 hover:bg-[var(--color-bg-hover)] hover:text-[var(--color-danger)]"
                   >
                     ×
@@ -348,34 +353,35 @@ export default function SettingsPage() {
 
           <div className="mt-5">
             <Button variant="secondary" size="sm" onClick={addDefaultItem}>
-              ＋ 新增分類
+              {t('defaults.addButton')}
             </Button>
           </div>
         </Card>
 
         <Card>
           <h2 className="mb-1 text-lg font-semibold text-[var(--color-text-primary)]">
-            預覽
+            {t('preview.title')}
           </h2>
           <p className="mb-6 text-xs text-[var(--color-text-tertiary)]">
-            若本月沒有額外獎金，也沒有任何浮動支出。
+            {t('preview.hint')}
           </p>
           <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-            <PreviewStat label="收入" value={calc.totalIncome} />
-            <PreviewStat label="固定支出" value={-calc.totalFixed} />
-            <PreviewStat label="ETF" value={-calc.etfAmount} />
+            <PreviewStat label={t('preview.income')} value={calc.totalIncome} locale={locale} />
+            <PreviewStat label={t('preview.fixed')} value={-calc.totalFixed} locale={locale} />
+            <PreviewStat label={t('preview.etf')} value={-calc.etfAmount} locale={locale} />
             <PreviewStat
-              label="額外儲蓄"
+              label={t('preview.extra')}
               value={calc.extraSavings}
               emphasis
               tone={calc.extraSavings >= 0 ? 'success' : 'danger'}
+              locale={locale}
             />
           </div>
         </Card>
 
         <div className="flex justify-end">
           <Button onClick={handleSave} disabled={saving}>
-            {saving ? '儲存中…' : '儲存'}
+            {saving ? tCommon('saving') : tCommon('save')}
           </Button>
         </div>
       </div>
@@ -388,9 +394,10 @@ interface PreviewStatProps {
   value: number
   emphasis?: boolean
   tone?: 'success' | 'danger'
+  locale: Locale
 }
 
-function PreviewStat({ label, value, emphasis, tone }: PreviewStatProps) {
+function PreviewStat({ label, value, emphasis, tone, locale }: PreviewStatProps) {
   return (
     <div>
       <div className="text-xs text-[var(--color-text-secondary)]">{label}</div>
@@ -402,7 +409,7 @@ function PreviewStat({ label, value, emphasis, tone }: PreviewStatProps) {
           tone === 'danger' && 'text-[var(--color-danger)]'
         )}
       >
-        {formatCurrency(value)}
+        {formatCurrency(value, locale)}
       </div>
     </div>
   )

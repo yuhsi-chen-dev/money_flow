@@ -1,20 +1,22 @@
-import Link from 'next/link'
-import type { Route } from 'next'
+import { useLocale, useTranslations } from 'next-intl'
+import { Link } from '@/i18n/navigation'
 import { cn, formatCurrency, formatYM } from '@/lib/utils'
-import type { HistoryMonth } from '@/types'
+import type { HistoryMonth, Locale } from '@/types'
 
 interface Props {
   months: HistoryMonth[]
 }
 
 export function MonthTable({ months }: Props) {
+  const t = useTranslations('history.table')
+  const locale = useLocale() as Locale
   const sorted = [...months].sort((a, b) => (a.ym < b.ym ? 1 : -1))
   const hasAny = sorted.some((m) => !m.calc.isProjection)
 
   if (!hasAny) {
     return (
       <div className="rounded-2xl border border-dashed border-[var(--color-border)] px-4 py-16 text-center text-sm text-[var(--color-text-tertiary)]">
-        這一年還沒有任何紀錄。回到總覽更新本月浮動支出，月底就會出現在這裡。
+        {t('noRecords')}
       </div>
     )
   }
@@ -24,14 +26,14 @@ export function MonthTable({ months }: Props) {
       <table className="w-full min-w-[720px] text-sm">
         <thead>
           <tr className="border-b border-[var(--color-border)] text-left text-xs uppercase tracking-wide text-[var(--color-text-tertiary)]">
-            <Th className="text-left">月份</Th>
-            <Th>收入</Th>
-            <Th>固定支出</Th>
-            <Th>浮動支出</Th>
-            <Th>總儲蓄</Th>
-            <Th>ETF</Th>
-            <Th>額外儲蓄</Th>
-            <Th className="text-right">操作</Th>
+            <Th className="text-left">{t('month')}</Th>
+            <Th>{t('income')}</Th>
+            <Th>{t('fixed')}</Th>
+            <Th>{t('variable')}</Th>
+            <Th>{t('totalSavings')}</Th>
+            <Th>{t('etf')}</Th>
+            <Th>{t('extra')}</Th>
+            <Th className="text-right">{t('actions')}</Th>
           </tr>
         </thead>
         <tbody>
@@ -43,22 +45,22 @@ export function MonthTable({ months }: Props) {
                 className="border-b border-[var(--color-border)] last:border-0"
               >
                 <Td className="text-left font-medium text-[var(--color-text-primary)]">
-                  {formatYM(ym)}
+                  {formatYM(ym, locale)}
                 </Td>
                 <Td muted={!recorded}>
-                  {recorded ? formatCurrency(calc.totalIncome) : '—'}
+                  {recorded ? formatCurrency(calc.totalIncome, locale) : t('empty')}
                 </Td>
                 <Td muted={!recorded}>
-                  {recorded ? formatCurrency(calc.totalFixed) : '—'}
+                  {recorded ? formatCurrency(calc.totalFixed, locale) : t('empty')}
                 </Td>
                 <Td muted={!recorded}>
-                  {recorded ? formatCurrency(calc.variableTotal) : '—'}
+                  {recorded ? formatCurrency(calc.variableTotal, locale) : t('empty')}
                 </Td>
                 <Td muted={!recorded}>
-                  {recorded ? formatCurrency(calc.totalSavings) : '—'}
+                  {recorded ? formatCurrency(calc.totalSavings, locale) : t('empty')}
                 </Td>
                 <Td muted={!recorded}>
-                  {recorded ? formatCurrency(calc.etfAmount) : '—'}
+                  {recorded ? formatCurrency(calc.etfAmount, locale) : t('empty')}
                 </Td>
                 <Td
                   className={cn(
@@ -70,14 +72,14 @@ export function MonthTable({ months }: Props) {
                         : 'text-[var(--color-text-tertiary)]'
                   )}
                 >
-                  {recorded ? formatCurrency(calc.extraSavings) : '—'}
+                  {recorded ? formatCurrency(calc.extraSavings, locale) : t('empty')}
                 </Td>
                 <Td className="text-right">
                   <Link
-                    href={`/month/${ym}` as Route}
+                    href={`/month/${ym}`}
                     className="text-xs text-[var(--color-accent)] transition-colors hover:text-[var(--color-accent-hover)]"
                   >
-                    編輯
+                    {t('edit')}
                   </Link>
                 </Td>
               </tr>

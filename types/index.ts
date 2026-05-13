@@ -1,3 +1,6 @@
+// ── Locale ───────────────────────────────────────────────────
+export type Locale = 'zh-TW' | 'en'
+
 // ── Settings ─────────────────────────────────────────────────
 export interface FixedExpenseItem {
   id: string

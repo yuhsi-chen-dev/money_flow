@@ -1,6 +1,7 @@
+import { useLocale, useTranslations } from 'next-intl'
 import { Card } from '@/components/ui/Card'
 import { cn, formatCurrency, formatYM } from '@/lib/utils'
-import type { HistoryMonth } from '@/types'
+import type { HistoryMonth, Locale } from '@/types'
 
 interface Props {
   months: HistoryMonth[]
@@ -31,36 +32,47 @@ function summarize(months: HistoryMonth[]): Stats {
 }
 
 export function YearlySummary({ months }: Props) {
+  const t = useTranslations('history.summary')
+  const locale = useLocale() as Locale
   const stats = summarize(months)
   const empty = stats.recordedCount === 0
+  const emptyLabel = t('empty')
 
   return (
     <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
       <SummaryCard
-        label="年度額外儲蓄"
+        label={t('yearTotal')}
         value={stats.total}
         tone={empty ? undefined : stats.total >= 0 ? 'success' : 'danger'}
         empty={empty}
+        emptyLabel={emptyLabel}
+        locale={locale}
       />
       <SummaryCard
-        label="月平均"
+        label={t('monthAverage')}
         value={stats.average}
         tone={empty ? undefined : stats.average >= 0 ? 'success' : 'danger'}
         empty={empty}
+        emptyLabel={emptyLabel}
+        locale={locale}
       />
       <SummaryCard
-        label="最佳月份"
+        label={t('bestMonth')}
         value={stats.best?.calc.extraSavings ?? 0}
-        subtitle={stats.best ? formatYM(stats.best.ym) : '—'}
+        subtitle={stats.best ? formatYM(stats.best.ym, locale) : emptyLabel}
         tone={empty ? undefined : 'success'}
         empty={empty}
+        emptyLabel={emptyLabel}
+        locale={locale}
       />
       <SummaryCard
-        label="最差月份"
+        label={t('worstMonth')}
         value={stats.worst?.calc.extraSavings ?? 0}
-        subtitle={stats.worst ? formatYM(stats.worst.ym) : '—'}
+        subtitle={stats.worst ? formatYM(stats.worst.ym, locale) : emptyLabel}
         tone={empty ? undefined : 'danger'}
         empty={empty}
+        emptyLabel={emptyLabel}
+        locale={locale}
       />
     </div>
   )
@@ -72,9 +84,19 @@ interface SummaryCardProps {
   subtitle?: string
   tone?: 'success' | 'danger'
   empty?: boolean
+  emptyLabel: string
+  locale: Locale
 }
 
-function SummaryCard({ label, value, subtitle, tone, empty }: SummaryCardProps) {
+function SummaryCard({
+  label,
+  value,
+  subtitle,
+  tone,
+  empty,
+  emptyLabel,
+  locale,
+}: SummaryCardProps) {
   return (
     <Card padding="sm">
       <div className="text-xs font-medium uppercase tracking-wide text-[var(--color-text-tertiary)]">
@@ -82,7 +104,7 @@ function SummaryCard({ label, value, subtitle, tone, empty }: SummaryCardProps) 
       </div>
       {empty ? (
         <div className="mt-2 text-2xl font-semibold tabular-nums text-[var(--color-text-tertiary)]">
-          —
+          {emptyLabel}
         </div>
       ) : (
         <>
@@ -94,7 +116,7 @@ function SummaryCard({ label, value, subtitle, tone, empty }: SummaryCardProps) 
               !tone && 'text-[var(--color-text-primary)]'
             )}
           >
-            {formatCurrency(value)}
+            {formatCurrency(value, locale)}
           </div>
           {subtitle && (
             <div className="mt-1 text-xs text-[var(--color-text-secondary)]">

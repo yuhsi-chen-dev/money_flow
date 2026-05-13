@@ -1,0 +1,206 @@
+{
+  "meta": {
+    "title": "MoneyFlow — Know exactly how much extra you saved this month",
+    "description": "A personal finance tracker. Savings = Income − Fixed − Variable."
+  },
+  "common": {
+    "appName": "MoneyFlow",
+    "tagline": "Know exactly how much extra you saved this month",
+    "loading": "Loading…",
+    "saving": "Saving…",
+    "save": "Save",
+    "saveError": "Save failed, please try again",
+    "delete": "Delete",
+    "remove": "Remove",
+    "collapse": "Collapse",
+    "edit": "Edit"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "history": "History",
+    "settings": "Settings",
+    "signOut": "Sign out",
+    "theme": {
+      "default": "Toggle theme",
+      "toDark": "Switch to dark mode",
+      "toLight": "Switch to light mode"
+    },
+    "locale": {
+      "switchTo": "Switch language"
+    }
+  },
+  "login": {
+    "google": "Sign in with Google",
+    "googleLoading": "Redirecting to Google…",
+    "googleError": "Sign-in failed, please try again"
+  },
+  "dashboard": {
+    "monthSelector": {
+      "label": "Month switcher",
+      "prev": "Previous month: {month}",
+      "next": "Next month: {month}"
+    },
+    "hero": {
+      "label": "Extra savings this month",
+      "badgeRecorded": "Updated",
+      "badgeProjection": "Projected"
+    },
+    "cards": {
+      "income": "Income",
+      "monthlyIncome": "Salary",
+      "bonus": "Bonus",
+      "fixed": "Fixed expenses",
+      "variable": "Variable expenses",
+      "totalSavings": "Total savings",
+      "etf": "ETF (regular investment)",
+      "extra": "Extra savings",
+      "expandDetails": "Show details ({count})",
+      "noData": "Not entered",
+      "notConfigured": "Not configured",
+      "empty": "—"
+    },
+    "ctaUpdate": "Update {month}"
+  },
+  "month": {
+    "backToOverview": "Back to dashboard",
+    "headerTitle": "Update {month}",
+    "subtitle": "Record this month's income and expenses, then return to the dashboard.",
+    "loadError": "Failed to load record: {message}",
+    "saveSuccess": "Saved ✓",
+    "sections": {
+      "income": {
+        "title": "This month's income",
+        "hint": "Salary is fixed. Bonus is a one-off extra for this month."
+      },
+      "expense": {
+        "title": "This month's expenses",
+        "hint": "Enter the variable expense total. Optionally break it down by category."
+      }
+    },
+    "salary": {
+      "title": "Salary",
+      "hint": "Adjust on Settings"
+    },
+    "bonus": {
+      "title": "Bonus",
+      "hint": "A one-off extra for this month.",
+      "placeholder": "e.g., 5000",
+      "addButton": "＋ Add bonus"
+    },
+    "variable": {
+      "title": "Variable expenses",
+      "hintWithItems": "Total for {month} is the sum of the categories below.",
+      "hintFreeform": "Total spend for {month} (required).",
+      "placeholder": "e.g., 12000",
+      "readonlyHint": "While categories are expanded, the total tracks their sum.",
+      "requiredError": "Please enter an amount",
+      "requiredToast": "Please enter variable expenses"
+    },
+    "items": {
+      "title": "Category breakdown",
+      "hint": "Track what you spent on. While open, variable expense total follows the sum.",
+      "addButton": "＋ Add category breakdown",
+      "categoryPlaceholder": "Category (Food / Transport …)",
+      "categoryEmpty": "Optional — record what you spent on each category.",
+      "totalLabel": "Category total",
+      "addCategory": "＋ Add category"
+    },
+    "note": {
+      "title": "Note",
+      "hint": "Optional — a reminder for yourself (up to {max} chars).",
+      "placeholder": "e.g., spent more on travel this month"
+    }
+  },
+  "preview": {
+    "title": "Live preview",
+    "income": "Income",
+    "fixed": "Fixed",
+    "variable": "Variable",
+    "etf": "ETF",
+    "extra": "Extra savings"
+  },
+  "history": {
+    "title": "History",
+    "subtitle": "Long-term trend of monthly extra savings.",
+    "yearSelector": {
+      "label": "Year switcher",
+      "prev": "Previous year: {year}",
+      "next": "Next year: {year}",
+      "current": "{year}"
+    },
+    "summary": {
+      "yearTotal": "Year total",
+      "monthAverage": "Monthly avg",
+      "bestMonth": "Best month",
+      "worstMonth": "Worst month",
+      "empty": "—"
+    },
+    "table": {
+      "month": "Month",
+      "income": "Income",
+      "fixed": "Fixed",
+      "variable": "Variable",
+      "totalSavings": "Total savings",
+      "etf": "ETF",
+      "extra": "Extra savings",
+      "actions": "Actions",
+      "edit": "Edit",
+      "empty": "—",
+      "noRecords": "No records this year. Update variable expenses from the dashboard and they'll show up here."
+    },
+    "chart": {
+      "monthLabel": "{month}",
+      "noRecord": "No record"
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Set up once, then just update variable expenses each month.",
+    "onboardBanner": "Finish your settings first, then return to the dashboard.",
+    "loadError": "Failed to load settings: {message}",
+    "saveSuccess": "Settings saved ✓",
+    "income": {
+      "title": "Income",
+      "hint": "Your fixed monthly salary deposit.",
+      "label": "Monthly fixed income",
+      "placeholder": "e.g., 80000"
+    },
+    "etf": {
+      "title": "ETF (regular investment)",
+      "hint": "Fixed monthly investment. Subtracted from total savings before extra savings.",
+      "label": "Monthly investment amount"
+    },
+    "fixed": {
+      "title": "Fixed expenses",
+      "hint": "Recurring monthly costs like rent, subscriptions, mobile.",
+      "total": "Total",
+      "empty": "No fixed expenses yet.",
+      "namePlaceholder": "Name (e.g., Rent)",
+      "addButton": "＋ Add fixed expense"
+    },
+    "defaults": {
+      "title": "Default variable-expense template",
+      "hint": "Pre-fills these categories every time you open the update form. Adjust amounts as needed.",
+      "total": "Template total",
+      "empty": "No template yet. You can still record manually at month-end.",
+      "categoryPlaceholder": "Category (e.g., Food)",
+      "addButton": "＋ Add category"
+    },
+    "preview": {
+      "title": "Preview",
+      "hint": "Assumes no bonus and no variable expenses for the month.",
+      "income": "Income",
+      "fixed": "Fixed",
+      "etf": "ETF",
+      "extra": "Extra savings"
+    }
+  },
+  "categories": {
+    "食費": "Food",
+    "交通": "Transport",
+    "娛樂": "Entertainment",
+    "購物": "Shopping",
+    "醫療": "Medical",
+    "其他": "Other"
+  }
+}

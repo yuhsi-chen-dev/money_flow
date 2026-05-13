@@ -2,8 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'MoneyFlow — 清楚知道這個月多存了多少',
-  description: '個人理財追蹤工具。儲蓄 = 收入 - 固定支出 - 浮動支出。',
+  title: 'MoneyFlow',
 }
 
 export const viewport: Viewport = {
@@ -15,15 +14,6 @@ export const viewport: Viewport = {
   initialScale: 1,
 }
 
-const THEME_INIT_SCRIPT = `(function(){try{var t=localStorage.getItem('mf-theme');if(t==='light'||t==='dark'){document.documentElement.setAttribute('data-theme',t);}}catch(_){}})();`
-
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <html lang="zh-TW">
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
-      </head>
-      <body>{children}</body>
-    </html>
-  )
+  return children
 }
