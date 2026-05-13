@@ -8,7 +8,7 @@ A minimalist personal finance tracker built around one formula and one goal:
 
 ## Current Task
 
-**Status:** 🛠 Two UX tweaks in progress (2026-05-12) — (1) 浮動支出 expandable 明細 on `/dashboard` mirroring 固定支出, (2) reframe `/month/[ym]` into a 本月收入 / 本月支出 split so 獎金 lives under 收入 instead of next to 浮動支出.
+**Status:** 🛠 i18n + 中/EN toggle (2026-05-12) — wire `next-intl` with URL-prefix locale routing (`/zh-TW/...`, `/en/...`), extract every hard-coded string into `messages/{locale}.json`, localize `formatYM` + `formatCurrency`, and add a `LocaleToggle` next to the existing `ThemeToggle` in the Navbar. Default locale is `zh-TW`.
 
 **Done so far (through 2026-05-12):**
 - [x] Scaffold Next.js 14 project with TypeScript + Tailwind + pnpm
@@ -28,9 +28,18 @@ A minimalist personal finance tracker built around one formula and one goal:
 - [x] Dark / light mode toggle — attribute-based theming (`[data-theme="light"|"dark"]`) with system fallback; `mf-theme` localStorage key; sync inline script in `<head>` prevents FOUC; ThemeToggle (sun/moon SVG) in Navbar
 - [x] Default 浮動支出 template — migration 0002 adds `default_variable_items`; 預設浮動支出範本 editor on `/settings`; `/month/[ym]` auto-opens the breakdown panel with seeded items and locks `variableTotal` to the items-sum while open; shared row mappers extracted to `lib/supabase/mappers.ts`
 
+**Done since last entry (2026-05-12):**
+- [x] `/dashboard` — 浮動支出 card has a `<details>` 展開明細 list mirroring 固定支出 when `record.variableItems` is non-empty; dashboard CTA reworded to "更新…的收支"
+- [x] `/month/[ym]` — form split into 本月收入 (月薪 read-only + 獎金 toggle) and 本月支出 (浮動支出 + 分類明細) sections with a shared `SectionHeader`; page subtitle reworded to "記錄這個月的收入與支出，儲存後回到總覽"
+
 **Building next (in progress):**
-- [ ] `/dashboard` — 浮動支出 card gets the same `<details>` expandable list as 固定支出 when `record.variableItems` is non-empty
-- [ ] `/month/[ym]` — split form into 本月收入 section (月薪 read-only + 獎金 toggle) and 本月支出 section (浮動支出 + 分類明細); update header + copy so the page reads as "月底更新" rather than "浮動支出 only"
+- [ ] Install `next-intl`; add `i18n/request.ts`, `middleware.ts` chained with the existing Supabase session-refresh middleware
+- [ ] Move all `(auth)` and `(app)` routes under `app/[locale]/...`; keep `/api/*` un-prefixed
+- [ ] Create `messages/zh-TW.json` + `messages/en.json`; extract every hard-coded UI string (pages, components, toasts, validation copy, badges, headers)
+- [ ] Localize `formatYM` (`2025年1月` ↔ `Jan 2025`) and `formatCurrency` (NT$ symbol kept, grouping via `Intl.NumberFormat(locale)`)
+- [ ] `LocaleToggle` component in the Navbar beside `ThemeToggle`; clicking it `router.replace`s the same path under the other locale prefix
+- [ ] Root layout sets `<html lang={locale}>` per request; wrap children in `NextIntlClientProvider`
+- [ ] Localize `DEFAULT_CATEGORIES` for the category picker (translated labels in the `<datalist>`, but the verbatim chosen string is what's persisted — existing zh entries in the DB are not rewritten)
 
 **Queued after:**
 - [ ] Deploy to Vercel — connect repo, copy env vars, set redirect URLs for Supabase Google OAuth to the production domain
@@ -90,6 +99,7 @@ This is **NOT** a generic expense tracker. It is a single-owner financial clarit
 | Linting | ESLint + Prettier | Auto-fix on save |
 | Testing | Jest + React Testing Library | Unit tests for lib/finance.ts |
 | Charts | recharts | History page only |
+| i18n | next-intl | URL-prefix routing, server + client components, default locale `zh-TW` |
 
 ---
 
@@ -241,29 +251,38 @@ h-14 flex items-center justify-between px-4 md:px-8
 ```
 moneyflow/
 ├── app/                              # Next.js App Router root
-│   ├── (auth)/                       # Auth route group — no Navbar
-│   │   └── login/
-│   │       └── page.tsx              # Google OAuth login page
-│   ├── (app)/                        # Protected route group
-│   │   ├── layout.tsx                # App shell: Navbar + session guard
-│   │   ├── dashboard/
-│   │   │   └── page.tsx              # 當月總覽 — main page
-│   │   ├── month/
-│   │   │   └── [ym]/
-│   │   │       └── page.tsx          # 月底更新 — param format: YYYY-MM
-│   │   ├── history/
-│   │   │   └── page.tsx              # 歷史趨勢圖
-│   │   └── settings/
-│   │       └── page.tsx              # 設定固定收支
-│   ├── api/
+│   ├── [locale]/                     # Locale segment — "zh-TW" or "en"
+│   │   ├── (auth)/                   # Auth route group — no Navbar
+│   │   │   └── login/
+│   │   │       └── page.tsx          # Google OAuth login page
+│   │   ├── (app)/                    # Protected route group
+│   │   │   ├── layout.tsx            # App shell: Navbar + session guard
+│   │   │   ├── dashboard/
+│   │   │   │   └── page.tsx          # 當月總覽 — main page
+│   │   │   ├── month/
+│   │   │   │   └── [ym]/
+│   │   │   │       └── page.tsx      # 月底更新 — param format: YYYY-MM
+│   │   │   ├── history/
+│   │   │   │   └── page.tsx          # 歷史趨勢圖
+│   │   │   └── settings/
+│   │   │       └── page.tsx          # 設定固定收支
+│   │   └── layout.tsx                # Wraps children in NextIntlClientProvider, sets <html lang={locale}>
+│   ├── api/                          # NOT localized — stays at root
 │   │   ├── monthly-records/
 │   │   │   ├── route.ts              # GET (list all), POST (create)
 │   │   │   └── [ym]/
 │   │   │       └── route.ts          # GET, PATCH, DELETE by YYYY-MM
 │   │   └── settings/
 │   │       └── route.ts              # GET, PUT user settings
-│   ├── layout.tsx                    # Root layout — fonts, metadata, theme
+│   ├── layout.tsx                    # Root layout — fonts, metadata, theme (no locale)
 │   └── globals.css                   # CSS variables + Tailwind base styles
+│
+├── i18n/
+│   └── request.ts                    # next-intl: loads messages/{locale}.json per request
+├── messages/
+│   ├── zh-TW.json                    # Traditional Chinese strings (source of truth, default)
+│   └── en.json                       # English strings
+├── middleware.ts                     # Chains next-intl locale middleware with Supabase session refresh
 │
 ├── components/
 │   ├── ui/                           # Primitive reusable components
@@ -274,8 +293,10 @@ moneyflow/
 │   │   ├── Modal.tsx
 │   │   └── Toast.tsx                 # Success / error notifications
 │   ├── layout/
-│   │   ├── Navbar.tsx                # Fixed top nav with links + active state
-│   │   └── PageWrapper.tsx           # max-w-5xl, padding, pt-14 for nav offset
+│   │   ├── Navbar.tsx                # Fixed top nav with links + active state + ThemeToggle + LocaleToggle
+│   │   ├── PageWrapper.tsx           # max-w-5xl, padding, pt-14 for nav offset
+│   │   ├── ThemeToggle.tsx           # Sun/moon SVG, mf-theme localStorage
+│   │   └── LocaleToggle.tsx          # 中/EN pill — router.replace(samePath under other locale prefix)
 │   ├── dashboard/
 │   │   ├── SavingHero.tsx            # Hero: 額外儲蓄 large number
 │   │   ├── FormulaBreakdown.tsx      # Cards grid showing all formula components
@@ -554,14 +575,22 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-// Format NTD: 24000 → "NT$24,000"
-export function formatCurrency(amount: number): string {
-  return `NT$${amount.toLocaleString('zh-TW')}`
+// Format NTD with locale-aware grouping. Currency symbol stays "NT$" in both locales.
+//   formatCurrency(24000, 'zh-TW') → "NT$24,000"
+//   formatCurrency(24000, 'en')    → "NT$24,000"
+export function formatCurrency(amount: number, locale: Locale = 'zh-TW'): string {
+  return `NT$${new Intl.NumberFormat(locale === 'en' ? 'en-US' : 'zh-TW').format(amount)}`
 }
 
-// Format YYYY-MM for display: "2025-01" → "2025年1月"
-export function formatYM(ym: string): string {
+// Format YYYY-MM for display:
+//   formatYM('2025-01', 'zh-TW') → "2025年1月"
+//   formatYM('2025-01', 'en')    → "Jan 2025"
+export function formatYM(ym: string, locale: Locale = 'zh-TW'): string {
   const [year, month] = ym.split('-')
+  if (locale === 'en') {
+    const date = new Date(Number(year), Number(month) - 1, 1)
+    return date.toLocaleString('en-US', { month: 'short', year: 'numeric' })
+  }
   return `${year}年${parseInt(month)}月`
 }
 
@@ -578,6 +607,48 @@ export function isValidYM(ym: string): boolean {
   return /^\d{4}-(0[1-9]|1[0-2])$/.test(ym)
 }
 ```
+
+---
+
+## Internationalization (i18n)
+
+MoneyFlow supports two locales: **`zh-TW`** (default, source-of-truth language) and **`en`**.
+
+### Library
+- `next-intl` — chosen for App Router native support, server + client component compatibility, and ICU formatting
+
+### Routing strategy
+- **URL prefix**: every user-facing page lives under `app/[locale]/...`. Examples: `/zh-TW/dashboard`, `/en/dashboard`
+- **API routes are NOT localized** — they stay at `/api/*`
+- `middleware.ts` chains the next-intl locale middleware with the existing Supabase session refresh. Visiting `/` redirects to `/zh-TW/dashboard` (or `/en/...` if `Accept-Language` clearly says English)
+- Invalid locale segment (e.g. `/fr/dashboard`) → 404 via next-intl's `locales: ['zh-TW', 'en']` allowlist
+
+### Locale toggle
+- `LocaleToggle.tsx` in the Navbar, beside `ThemeToggle`
+- Pill displays the OTHER locale's label: `中` when in `en`, `EN` when in `zh-TW`
+- Click → `router.replace` to the same pathname/search under the other locale prefix (no full reload)
+- No localStorage — URL is the single source of truth
+
+### Messages
+- One JSON file per locale at `messages/{locale}.json`
+- Keys are namespaced by page/component, e.g. `dashboard.hero.label`, `month.sections.income.title`, `settings.fixedExpenses.addRow`
+- `zh-TW.json` is the source of truth — when adding a new string, write the `zh-TW` value first, then mirror into `en.json`
+- Server components: `import { getTranslations } from 'next-intl/server'` then `const t = await getTranslations('dashboard.hero')`
+- Client components: `import { useTranslations } from 'next-intl'` then `const t = useTranslations('dashboard.hero')`
+
+### Locale-aware utilities
+- `Locale` type lives in `types/index.ts`: `export type Locale = 'zh-TW' | 'en'`
+- `formatYM(ym, locale)` and `formatCurrency(amount, locale)` accept a locale and produce locale-appropriate output (see Utility Functions)
+- For currency, the symbol stays `NT$` in both locales (MoneyFlow is NTD-only); only thousands grouping is locale-driven via `Intl.NumberFormat`
+
+### `DEFAULT_CATEGORIES` localization
+- The constant stays as canonical zh keys (`'食費' | '交通' | ...`) — these are the **stored** values in `variable_items.category`
+- The picker `<datalist>` displays a translated label per key via `useTranslations('categories')`, but the value persisted to the DB is whatever the user actually typed/selected (unchanged behavior)
+- Existing zh entries in any historical record are NOT rewritten — they continue to render verbatim
+
+### Edge cases
+- User switches locale on `/month/2025-03` mid-edit: form state is preserved (toggle is a `router.replace`, not a remount of the form root)
+- Toast messages, validation errors, and API error copy all run through `t()` — no hardcoded user-visible strings anywhere
 
 ---
 
@@ -643,6 +714,7 @@ DELETE /api/monthly-records/[ym]  → delete record
 - Use `cn()` from `lib/utils.ts` for all conditional class merging
 - No inline `style={{}}` except for CSS variable dynamic values
 - All theme colors via CSS variables: `text-[var(--color-text-primary)]`
+- **No hardcoded user-visible strings** — every label, placeholder, button, toast, validation message, and badge text comes from `messages/{locale}.json` via `t()` / `getTranslations()`. Hardcoded strings are only allowed for non-UI values (CSS classes, data keys, log statements).
 
 ### Data Fetching
 - Server Components: fetch directly via `createServerClient()` — no hooks needed
@@ -914,6 +986,10 @@ supabase/.temp/         — local Supabase temp files
 | ETF amount > totalSavings | extraSavings is negative, shown in red |
 | Edit a past month | Allowed — no restrictions on past dates |
 | Delete a monthly record | Allowed via DELETE API — confirm before action |
+| Visit a path without a locale prefix (e.g. `/dashboard`) | Middleware redirects to default-locale prefix (`/zh-TW/dashboard`) |
+| Visit an unsupported locale (e.g. `/fr/dashboard`) | 404 — `next-intl` allowlist rejects it |
+| Switch locale mid-edit on `/month/[ym]` | Form state preserved (locale toggle is `router.replace`, not a remount) |
+| Historical `variable_items.category` stored in zh while UI is in `en` | Render verbatim — stored strings are never auto-translated |
 
 ---
 
@@ -931,6 +1007,8 @@ supabase/.temp/         — local Supabase temp files
 - ❌ Never add features outside this spec without first updating CLAUDE.md
 - ❌ Never skip the auth guard in any API route
 - ❌ Never commit WIP or broken code — every commit should be working state
+- ❌ Never hardcode user-visible strings — every UI string must go through `t()` / `getTranslations()` against `messages/{locale}.json`
+- ❌ Never link to a path without its locale prefix (`/dashboard` ❌ — use `next-intl`'s `Link` or build paths from `useLocale()` / route params)
 
 ---
 
@@ -952,6 +1030,7 @@ supabase/.temp/         — local Supabase temp files
 - [x] History page with recharts chart + summary stats
 - [x] Dark / light mode manual toggle (persisted in localStorage)
 - [x] Default 浮動支出 template (configured in /settings, seeds /month/[ym] form)
+- [ ] i18n with `next-intl` — URL-prefix routing, `zh-TW` (default) + `en`, LocaleToggle in Navbar
 - [ ] Deployed to Vercel
 - [ ] Custom domain (optional)
 
@@ -975,3 +1054,7 @@ supabase/.temp/         — local Supabase temp files
 | Charts | recharts | Simple React-native API, good enough for a bar/line chart |
 | Styling | CSS variables + Tailwind | Theme-able, consistent across dark/light, no runtime overhead |
 | Finance logic | Pure functions in lib/finance.ts | Testable, no side effects, single source of truth |
+| i18n library | next-intl | App Router native; supports both server and client components without juggling providers |
+| Locale persistence | URL prefix (`/zh-TW/...`, `/en/...`) | SEO-friendly, shareable, no client/server hydration mismatch — URL is the source of truth |
+| Default locale | zh-TW | App is built for the owner first; English is a secondary courtesy |
+| Currency symbol across locales | Always "NT$" | App is NTD-only — symbol stays; only thousand-separator grouping localizes |
