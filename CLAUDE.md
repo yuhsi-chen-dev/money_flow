@@ -609,7 +609,7 @@ MoneyFlow supports two locales: **`en`** (default for routing) and **`zh-TW`** (
 ### Routing strategy
 - **URL prefix**: every user-facing page lives under `app/[locale]/...`. Examples: `/zh-TW/dashboard`, `/en/dashboard`
 - **API routes are NOT localized** — they stay at `/api/*`
-- `middleware.ts` chains the next-intl locale middleware with the existing Supabase session refresh. Visiting `/` redirects to `/zh-TW/dashboard` (or `/en/...` if `Accept-Language` clearly says English)
+- `middleware.ts` chains the next-intl locale middleware with the existing Supabase session refresh. Visiting `/` always redirects to `/en/...` — `localeDetection: false` in `i18n/routing.ts` so Accept-Language and the locale cookie are ignored; the only way to switch locale is the `LocaleToggle`
 - Invalid locale segment (e.g. `/fr/dashboard`) → 404 via next-intl's `locales: ['zh-TW', 'en']` allowlist
 
 ### Locale toggle
@@ -988,7 +988,7 @@ supabase/.temp/         — local Supabase temp files
 | ETF amount > totalSavings | extraSavings is negative, shown in red |
 | Edit a past month | Allowed — no restrictions on past dates |
 | Delete a monthly record | Allowed via DELETE API — confirm before action |
-| Visit a path without a locale prefix (e.g. `/dashboard`) | Middleware redirects to default-locale prefix (`/en/dashboard`, or `/zh-TW/dashboard` if `Accept-Language` clearly says Traditional Chinese) |
+| Visit a path without a locale prefix (e.g. `/dashboard`) | Middleware always redirects to the default-locale prefix (`/en/dashboard`); `localeDetection: false` so browser `Accept-Language` and the `NEXT_LOCALE` cookie are ignored — only the `LocaleToggle` switches locale |
 | Visit an unsupported locale (e.g. `/fr/dashboard`) | 404 — `next-intl` allowlist rejects it |
 | Switch locale mid-edit on `/month/[ym]` | Form state preserved (locale toggle is `router.replace`, not a remount) |
 | Historical `variable_items.category` stored in zh while UI is in `en` | Render verbatim — stored strings are never auto-translated |
@@ -1058,6 +1058,6 @@ supabase/.temp/         — local Supabase temp files
 | Finance logic | Pure functions in lib/finance.ts | Testable, no side effects, single source of truth |
 | i18n library | next-intl | App Router native; supports both server and client components without juggling providers |
 | Locale persistence | URL prefix (`/zh-TW/...`, `/en/...`) | SEO-friendly, shareable, no client/server hydration mismatch — URL is the source of truth |
-| Default locale (routing) | en | Default URL prefix when no preference is detected; Accept-Language still steers Chinese browsers to `/zh-TW` |
+| Default locale (routing) | en | Always the default URL prefix; `localeDetection: false` means Accept-Language and the locale cookie are ignored, the `LocaleToggle` is the only way to switch |
 | Source-of-truth language (translation) | zh-TW | Every new string is written in `zh-TW` first then mirrored to `en` — the owner thinks in zh-TW even if the URL default is `en` |
 | Currency symbol across locales | Always "NT$" | App is NTD-only — symbol stays; only thousand-separator grouping localizes |
