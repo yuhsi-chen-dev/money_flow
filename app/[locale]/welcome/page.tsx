@@ -1,6 +1,7 @@
 import { getTranslations } from 'next-intl/server'
 import { Link, redirect } from '@/i18n/navigation'
 import { LocaleToggle } from '@/components/layout/LocaleToggle'
+import { Reveal } from '@/components/ui/Reveal'
 import { createServerClient } from '@/lib/supabase/server'
 
 interface PageProps {
@@ -32,49 +33,59 @@ export default async function WelcomePage({ params }: PageProps) {
   }
 
   return (
-    <main className="relative mx-auto min-h-screen w-full max-w-4xl px-4 pb-24 pt-12 md:px-8 md:pb-32 md:pt-16">
-      <div className="absolute right-4 top-4 md:right-8 md:top-6">
+    <main className="relative mx-auto min-h-screen w-full max-w-4xl px-4 pb-20 pt-8 md:px-8 md:pb-32 md:pt-16">
+      <div className="absolute right-3 top-3 md:right-8 md:top-6">
         <LocaleToggle />
       </div>
 
-      <header className="mt-12 text-center md:mt-20">
-        <h1 className="font-display text-6xl font-bold tracking-tight text-[var(--color-text-primary)] md:text-8xl">
-          {tCommon('appName')}
-        </h1>
-        <p className="mt-6 text-lg text-[var(--color-text-secondary)] md:mt-8 md:text-xl">
-          {t('tagline')}
-        </p>
-      </header>
-
-      <div className="mt-20 flex flex-col gap-8 md:mt-28 md:gap-10">
-        <FeatureCard step="01">
-          <CardTitle>{t('cards.formula.title')}</CardTitle>
-          <p className="mt-8 text-center font-mono text-2xl font-semibold tracking-tight text-[var(--color-accent)] md:mt-10 md:text-3xl lg:text-4xl">
-            {t('cards.formula.equation')}
+      <Reveal>
+        <header className="mt-10 text-center md:mt-20">
+          <h1 className="font-display text-4xl font-bold tracking-tight text-[var(--color-text-primary)] md:text-8xl">
+            {tCommon('appName')}
+          </h1>
+          <p className="mt-4 text-base text-[var(--color-text-secondary)] md:mt-8 md:text-xl">
+            {t('tagline')}
           </p>
-          <CardBody>{t('cards.formula.body')}</CardBody>
-        </FeatureCard>
+        </header>
+      </Reveal>
 
-        <FeatureCard step="02">
-          <CardTitle>{t('cards.different.title')}</CardTitle>
-          <CardBody>{t('cards.different.body')}</CardBody>
-        </FeatureCard>
+      <div className="mt-14 flex flex-col gap-6 md:mt-28 md:gap-10">
+        <Reveal delay={120}>
+          <FeatureCard step="01">
+            <CardTitle>{t('cards.formula.title')}</CardTitle>
+            <p className="mt-6 text-center font-mono text-xl font-semibold tracking-tight text-[var(--color-accent)] md:mt-10 md:text-3xl lg:text-4xl">
+              {t('cards.formula.equation')}
+            </p>
+            <CardBody>{t('cards.formula.body')}</CardBody>
+          </FeatureCard>
+        </Reveal>
 
-        <FeatureCard step="03">
-          <CardTitle>{t('cards.extra.title')}</CardTitle>
-          <CardBody>{t('cards.extra.body')}</CardBody>
-        </FeatureCard>
+        <Reveal delay={220}>
+          <FeatureCard step="02">
+            <CardTitle>{t('cards.different.title')}</CardTitle>
+            <CardBody>{t('cards.different.body')}</CardBody>
+          </FeatureCard>
+        </Reveal>
+
+        <Reveal delay={320}>
+          <FeatureCard step="03">
+            <CardTitle>{t('cards.extra.title')}</CardTitle>
+            <CardBody>{t('cards.extra.body')}</CardBody>
+          </FeatureCard>
+        </Reveal>
       </div>
 
-      <div className="mt-16 flex justify-center md:mt-24">
-        <Link
-          href="/settings"
-          className="group inline-flex items-center gap-2.5 rounded-full bg-[var(--color-accent)] px-10 py-4 text-base font-semibold text-white transition-all duration-200 hover:bg-[var(--color-accent-hover)] hover:gap-3.5 active:scale-[0.98] md:text-lg"
-        >
-          <span>{t('cta')}</span>
-          <ArrowRight />
-        </Link>
-      </div>
+      <Reveal delay={420}>
+        <div className="mt-12 flex justify-center md:mt-24">
+          <Link
+            href="/settings"
+            className="group inline-flex items-center gap-2.5 rounded-full bg-[var(--color-accent)] px-8 py-3.5 text-base font-semibold text-white transition-all duration-200 hover:bg-[var(--color-accent-hover)] hover:gap-3.5 active:scale-[0.98] md:px-10 md:py-4 md:text-lg"
+          >
+            <span>{t('cta')}</span>
+            <ArrowRight />
+          </Link>
+        </div>
+      </Reveal>
     </main>
   )
 }
@@ -87,7 +98,7 @@ function FeatureCard({
   children: React.ReactNode
 }) {
   return (
-    <section className="rounded-3xl border border-[var(--color-border)] bg-[var(--color-bg-card)] p-8 md:p-12">
+    <section className="rounded-3xl border border-[var(--color-border)] bg-[var(--color-bg-card)] p-6 md:p-12">
       <div className="font-mono text-xs font-semibold tracking-[0.3em] text-[var(--color-accent)]">
         {step}
       </div>
@@ -98,7 +109,7 @@ function FeatureCard({
 
 function CardTitle({ children }: { children: React.ReactNode }) {
   return (
-    <h2 className="font-display text-2xl font-semibold tracking-tight text-[var(--color-text-primary)] md:text-3xl">
+    <h2 className="font-display text-xl font-semibold tracking-tight text-[var(--color-text-primary)] md:text-3xl">
       {children}
     </h2>
   )
@@ -106,7 +117,7 @@ function CardTitle({ children }: { children: React.ReactNode }) {
 
 function CardBody({ children }: { children: React.ReactNode }) {
   return (
-    <p className="mt-5 text-base leading-relaxed text-[var(--color-text-secondary)] md:mt-6 md:text-lg">
+    <p className="mt-4 text-sm leading-relaxed text-[var(--color-text-secondary)] md:mt-6 md:text-lg">
       {children}
     </p>
   )
