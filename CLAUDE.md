@@ -8,7 +8,7 @@ A minimalist personal finance tracker built around one formula and one goal:
 
 ## Current Task
 
-**Status:** ✅ i18n + 中/EN toggle (2026-05-13) — `next-intl@4.11` wired with URL-prefix locale routing (`/zh-TW/...`, `/en/...`), every UI string extracted into `messages/{locale}.json`, `formatYM` + `formatCurrency` localized, `LocaleToggle` in Navbar beside `ThemeToggle`. Default locale is `zh-TW`. Verified end-to-end: type-check clean, lint clean, 11/11 tests pass, production build green (16 routes), runtime smoke confirms `/` → `/zh-TW`, `/en/dashboard` → `/en/login` (locale preserved through auth guard), `/api/*` still un-prefixed.
+**Status:** ✅ `/welcome` onboarding (2026-05-13) — first-login intro screen at `/welcome` that names the inspiration (Nick Maggiulli《持續買進》) and explains how MoneyFlow differs from generic category-heavy 記帳 apps. Three Apple-minimal cards (the formula, the philosophy difference, ETF 定期定額 → 額外儲蓄) plus a 「開始設定 →」 CTA. Shown only when `user_settings IS NULL`; once onboarded, visiting `/welcome` redirects to `/dashboard`. Replaced the previous `/settings?reason=onboard` redirect target for first-time users. Verified: type-check clean, lint clean, 11/11 tests, production build green (18 routes), `/welcome` smoke (`/welcome` → `/zh-TW/welcome` → `/zh-TW/login` unauth).
 
 **Done so far (through 2026-05-12):**
 - [x] Scaffold Next.js 14 project with TypeScript + Tailwind + pnpm
@@ -27,17 +27,8 @@ A minimalist personal finance tracker built around one formula and one goal:
 - [x] `/history` — recharts BarChart (Jan–Dec, color-coded bars + tooltip), YearlySummary 4-card grid, MonthTable with 編輯 links; year selector via `?year=…`; `GET /api/monthly-records` (with optional `?year=` filter); added `HistoryMonth` type
 - [x] Dark / light mode toggle — attribute-based theming (`[data-theme="light"|"dark"]`) with system fallback; `mf-theme` localStorage key; sync inline script in `<head>` prevents FOUC; ThemeToggle (sun/moon SVG) in Navbar
 - [x] Default 浮動支出 template — migration 0002 adds `default_variable_items`; 預設浮動支出範本 editor on `/settings`; `/month/[ym]` auto-opens the breakdown panel with seeded items and locks `variableTotal` to the items-sum while open; shared row mappers extracted to `lib/supabase/mappers.ts`
-
-**Done since last entry (2026-05-13):**
-- [x] Installed `next-intl@4.11.2`; created `i18n/routing.ts` (`zh-TW` default, `en`), `i18n/request.ts` (loads `messages/{locale}.json`), and `i18n/navigation.ts` (typed `Link`, `useRouter`, `usePathname`, `redirect`)
-- [x] `middleware.ts` chains `createIntlMiddleware(routing)` with the existing Supabase session-refresh; `/api/*` and `/auth/*` skip the locale step entirely; auth redirects are locale-aware (`/en/dashboard` → `/en/login`)
-- [x] Moved every page under `app/[locale]/...`; root `app/layout.tsx` is a pass-through, `app/[locale]/layout.tsx` owns `<html lang={locale}>` + `<head>` theme-init script + `NextIntlClientProvider`; `app/[locale]/page.tsx` redirects `/{locale}` → `/{locale}/dashboard`
-- [x] `messages/zh-TW.json` (source of truth) + `messages/en.json` cover every UI string: pages, components, toasts, validation, badges, headers, CTAs, accessibility labels
-- [x] `formatYM` + `formatCurrency` now accept a `Locale` and produce locale-appropriate output (`NT$` symbol kept in both); `Locale` type added to `types/index.ts`
-- [x] `LocaleToggle` (中/EN pill) added to `Navbar` beside `ThemeToggle`; click → `router.replace` to the same path under the other locale prefix, preserving query string
-- [x] `DEFAULT_CATEGORIES` picker datalist now displays translated labels via `t('categories.*')`; the persisted string is still the raw zh key, so existing DB entries render verbatim
-- [x] Disabled `experimental.typedRoutes` (it conflicts with next-intl's localeless `Link`); removed all `as Route` casts
-- [x] Verified end-to-end: `pnpm type-check`, `pnpm lint`, `pnpm test` (11/11), `pnpm build` (16 routes), curl smoke (`/`, `/dashboard`, `/zh-TW/...`, `/en/...`, `/api/settings`)
+- [x] i18n with `next-intl@4.11` — URL-prefix routing (`/zh-TW`, `/en`), every UI string in `messages/{locale}.json`, locale-aware `formatYM`/`formatCurrency`, `LocaleToggle` in Navbar beside `ThemeToggle`; chained middleware (intl + Supabase session refresh) preserves the active locale through auth redirects
+- [x] `/welcome` first-login intro — names the inspiration (Maggiulli《持續買進》), three Apple-minimal cards + 「開始設定 →」 CTA; shown only when `user_settings` is missing, repointed redirects from `/dashboard`, `/month/[ym]`, `/history` to land here
 
 **Queued after:**
 - [ ] Deploy to Vercel — connect repo, copy env vars, set redirect URLs for Supabase Google OAuth to the production domain
@@ -888,6 +879,18 @@ supabase/.temp/         — local Supabase temp files
 - On auth success → redirect to `/dashboard`
 - If already authenticated → redirect immediately to `/dashboard`
 
+### `/welcome` — 第一次登入導覽
+- **No Navbar** — full focus on the intro flow
+- Auth-required: if no session → redirect to `/login`
+- If `user_settings` already exists → redirect to `/dashboard` (so revisiting `/welcome` after onboarding never re-shows the intro)
+- Header: large "MoneyFlow" wordmark + tagline 「清楚知道這個月多存了多少」
+- Three Apple-minimal cards stacked vertically (`max-w-3xl mx-auto`, generous spacing):
+  1. **一個公式，搞懂一切** — `儲蓄 = 收入 − 固定支出 − 浮動支出`. Subtitle: "靈感來自 Nick Maggiulli《持續買進》。重點不在花了多少，而在剩下多少。"
+  2. **不是另一個分類記帳 app** — "不要求你每天輸入每一筆消費。一個月只要在月底花 30 秒，輸入這個月的浮動支出總額即可。"
+  3. **你真正多存了多少** — "ETF 定期定額是『pay yourself first』— 強制儲蓄不能少。扣掉固定支出、浮動支出、ETF 之後，剩下的就是『額外儲蓄』— 這個 app 唯一在乎的數字。"
+- Single CTA: 「開始設定 →」 → `/settings` (no `?reason=onboard` query — the welcome page already delivered the message)
+- All strings live under `welcome.*` in `messages/{locale}.json`
+
 ### `/dashboard` — 當月總覽
 - Auto-detects current month via `getCurrentYM()`
 - **Guard:** If no `user_settings` → redirect to `/settings` with info banner "請先完成設定"
@@ -972,7 +975,8 @@ supabase/.temp/         — local Supabase temp files
 
 | Situation | Expected Behavior |
 |---|---|
-| First login, no settings | Redirect to `/settings` with info banner |
+| First login, no settings | Redirect to `/welcome` (intro screen); CTA there leads to `/settings` |
+| Visit `/welcome` after onboarding (settings exist) | Redirect to `/dashboard` — intro is one-time |
 | Dashboard with no record for current month | Show projection with "預估中" badge, variableTotal = 0 |
 | Months with no record in history | Empty bar in chart (height 0), "—" in table cells |
 | Negative 額外儲蓄 | Red color, no error — perfectly valid |
