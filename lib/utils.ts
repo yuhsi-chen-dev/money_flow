@@ -8,12 +8,12 @@ export function cn(...inputs: ClassValue[]) {
 
 const numberLocale = (locale: Locale): string => (locale === 'en' ? 'en-US' : 'zh-TW')
 
-export function formatCurrency(amount: number, locale: Locale = 'zh-TW'): string {
+export function formatCurrency(amount: number, locale: Locale = 'en'): string {
   const sign = amount < 0 ? '-' : ''
   return `${sign}NT$${Math.abs(amount).toLocaleString(numberLocale(locale))}`
 }
 
-export function formatYM(ym: string, locale: Locale = 'zh-TW'): string {
+export function formatYM(ym: string, locale: Locale = 'en'): string {
   const [year, month] = ym.split('-')
   const monthNum = parseInt(month ?? '0', 10)
   if (locale === 'en') {

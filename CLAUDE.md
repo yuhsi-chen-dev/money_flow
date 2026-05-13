@@ -88,7 +88,7 @@ This is **NOT** a generic expense tracker. It is a single-owner financial clarit
 | Linting | ESLint + Prettier | Auto-fix on save |
 | Testing | Jest + React Testing Library | Unit tests for lib/finance.ts |
 | Charts | recharts | History page only |
-| i18n | next-intl | URL-prefix routing, server + client components, default locale `zh-TW` |
+| i18n | next-intl | URL-prefix routing, server + client components, default locale `en` (zh-TW is the source-of-truth language) |
 
 ---
 
@@ -269,8 +269,8 @@ moneyflow/
 ├── i18n/
 │   └── request.ts                    # next-intl: loads messages/{locale}.json per request
 ├── messages/
-│   ├── zh-TW.json                    # Traditional Chinese strings (source of truth, default)
-│   └── en.json                       # English strings
+│   ├── zh-TW.json                    # Traditional Chinese strings (source-of-truth language)
+│   └── en.json                       # English strings (default locale for routing)
 ├── middleware.ts                     # Chains next-intl locale middleware with Supabase session refresh
 │
 ├── components/
@@ -601,7 +601,7 @@ export function isValidYM(ym: string): boolean {
 
 ## Internationalization (i18n)
 
-MoneyFlow supports two locales: **`zh-TW`** (default, source-of-truth language) and **`en`**.
+MoneyFlow supports two locales: **`en`** (default for routing) and **`zh-TW`** (source-of-truth language — every new string is written here first, then mirrored to `en`).
 
 ### Library
 - `next-intl` — chosen for App Router native support, server + client component compatibility, and ICU formatting
@@ -988,7 +988,7 @@ supabase/.temp/         — local Supabase temp files
 | ETF amount > totalSavings | extraSavings is negative, shown in red |
 | Edit a past month | Allowed — no restrictions on past dates |
 | Delete a monthly record | Allowed via DELETE API — confirm before action |
-| Visit a path without a locale prefix (e.g. `/dashboard`) | Middleware redirects to default-locale prefix (`/zh-TW/dashboard`) |
+| Visit a path without a locale prefix (e.g. `/dashboard`) | Middleware redirects to default-locale prefix (`/en/dashboard`, or `/zh-TW/dashboard` if `Accept-Language` clearly says Traditional Chinese) |
 | Visit an unsupported locale (e.g. `/fr/dashboard`) | 404 — `next-intl` allowlist rejects it |
 | Switch locale mid-edit on `/month/[ym]` | Form state preserved (locale toggle is `router.replace`, not a remount) |
 | Historical `variable_items.category` stored in zh while UI is in `en` | Render verbatim — stored strings are never auto-translated |
@@ -1032,7 +1032,7 @@ supabase/.temp/         — local Supabase temp files
 - [x] History page with recharts chart + summary stats
 - [x] Dark / light mode manual toggle (persisted in localStorage)
 - [x] Default 浮動支出 template (configured in /settings, seeds /month/[ym] form)
-- [x] i18n with `next-intl` — URL-prefix routing, `zh-TW` (default) + `en`, LocaleToggle in Navbar
+- [x] i18n with `next-intl` — URL-prefix routing, `en` (default) + `zh-TW`, LocaleToggle in Navbar
 - [ ] Deployed to Vercel
 - [ ] Custom domain (optional)
 
@@ -1058,5 +1058,6 @@ supabase/.temp/         — local Supabase temp files
 | Finance logic | Pure functions in lib/finance.ts | Testable, no side effects, single source of truth |
 | i18n library | next-intl | App Router native; supports both server and client components without juggling providers |
 | Locale persistence | URL prefix (`/zh-TW/...`, `/en/...`) | SEO-friendly, shareable, no client/server hydration mismatch — URL is the source of truth |
-| Default locale | zh-TW | App is built for the owner first; English is a secondary courtesy |
+| Default locale (routing) | en | Default URL prefix when no preference is detected; Accept-Language still steers Chinese browsers to `/zh-TW` |
+| Source-of-truth language (translation) | zh-TW | Every new string is written in `zh-TW` first then mirrored to `en` — the owner thinks in zh-TW even if the URL default is `en` |
 | Currency symbol across locales | Always "NT$" | App is NTD-only — symbol stays; only thousand-separator grouping localizes |
