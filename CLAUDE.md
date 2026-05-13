@@ -8,7 +8,7 @@ A minimalist personal finance tracker built around one formula and one goal:
 
 ## Current Task
 
-**Status:** 🛠 i18n + 中/EN toggle (2026-05-12) — wire `next-intl` with URL-prefix locale routing (`/zh-TW/...`, `/en/...`), extract every hard-coded string into `messages/{locale}.json`, localize `formatYM` + `formatCurrency`, and add a `LocaleToggle` next to the existing `ThemeToggle` in the Navbar. Default locale is `zh-TW`.
+**Status:** ✅ i18n + 中/EN toggle (2026-05-13) — `next-intl@4.11` wired with URL-prefix locale routing (`/zh-TW/...`, `/en/...`), every UI string extracted into `messages/{locale}.json`, `formatYM` + `formatCurrency` localized, `LocaleToggle` in Navbar beside `ThemeToggle`. Default locale is `zh-TW`. Verified end-to-end: type-check clean, lint clean, 11/11 tests pass, production build green (16 routes), runtime smoke confirms `/` → `/zh-TW`, `/en/dashboard` → `/en/login` (locale preserved through auth guard), `/api/*` still un-prefixed.
 
 **Done so far (through 2026-05-12):**
 - [x] Scaffold Next.js 14 project with TypeScript + Tailwind + pnpm
@@ -28,18 +28,16 @@ A minimalist personal finance tracker built around one formula and one goal:
 - [x] Dark / light mode toggle — attribute-based theming (`[data-theme="light"|"dark"]`) with system fallback; `mf-theme` localStorage key; sync inline script in `<head>` prevents FOUC; ThemeToggle (sun/moon SVG) in Navbar
 - [x] Default 浮動支出 template — migration 0002 adds `default_variable_items`; 預設浮動支出範本 editor on `/settings`; `/month/[ym]` auto-opens the breakdown panel with seeded items and locks `variableTotal` to the items-sum while open; shared row mappers extracted to `lib/supabase/mappers.ts`
 
-**Done since last entry (2026-05-12):**
-- [x] `/dashboard` — 浮動支出 card has a `<details>` 展開明細 list mirroring 固定支出 when `record.variableItems` is non-empty; dashboard CTA reworded to "更新…的收支"
-- [x] `/month/[ym]` — form split into 本月收入 (月薪 read-only + 獎金 toggle) and 本月支出 (浮動支出 + 分類明細) sections with a shared `SectionHeader`; page subtitle reworded to "記錄這個月的收入與支出，儲存後回到總覽"
-
-**Building next (in progress):**
-- [ ] Install `next-intl`; add `i18n/request.ts`, `middleware.ts` chained with the existing Supabase session-refresh middleware
-- [ ] Move all `(auth)` and `(app)` routes under `app/[locale]/...`; keep `/api/*` un-prefixed
-- [ ] Create `messages/zh-TW.json` + `messages/en.json`; extract every hard-coded UI string (pages, components, toasts, validation copy, badges, headers)
-- [ ] Localize `formatYM` (`2025年1月` ↔ `Jan 2025`) and `formatCurrency` (NT$ symbol kept, grouping via `Intl.NumberFormat(locale)`)
-- [ ] `LocaleToggle` component in the Navbar beside `ThemeToggle`; clicking it `router.replace`s the same path under the other locale prefix
-- [ ] Root layout sets `<html lang={locale}>` per request; wrap children in `NextIntlClientProvider`
-- [ ] Localize `DEFAULT_CATEGORIES` for the category picker (translated labels in the `<datalist>`, but the verbatim chosen string is what's persisted — existing zh entries in the DB are not rewritten)
+**Done since last entry (2026-05-13):**
+- [x] Installed `next-intl@4.11.2`; created `i18n/routing.ts` (`zh-TW` default, `en`), `i18n/request.ts` (loads `messages/{locale}.json`), and `i18n/navigation.ts` (typed `Link`, `useRouter`, `usePathname`, `redirect`)
+- [x] `middleware.ts` chains `createIntlMiddleware(routing)` with the existing Supabase session-refresh; `/api/*` and `/auth/*` skip the locale step entirely; auth redirects are locale-aware (`/en/dashboard` → `/en/login`)
+- [x] Moved every page under `app/[locale]/...`; root `app/layout.tsx` is a pass-through, `app/[locale]/layout.tsx` owns `<html lang={locale}>` + `<head>` theme-init script + `NextIntlClientProvider`; `app/[locale]/page.tsx` redirects `/{locale}` → `/{locale}/dashboard`
+- [x] `messages/zh-TW.json` (source of truth) + `messages/en.json` cover every UI string: pages, components, toasts, validation, badges, headers, CTAs, accessibility labels
+- [x] `formatYM` + `formatCurrency` now accept a `Locale` and produce locale-appropriate output (`NT$` symbol kept in both); `Locale` type added to `types/index.ts`
+- [x] `LocaleToggle` (中/EN pill) added to `Navbar` beside `ThemeToggle`; click → `router.replace` to the same path under the other locale prefix, preserving query string
+- [x] `DEFAULT_CATEGORIES` picker datalist now displays translated labels via `t('categories.*')`; the persisted string is still the raw zh key, so existing DB entries render verbatim
+- [x] Disabled `experimental.typedRoutes` (it conflicts with next-intl's localeless `Link`); removed all `as Route` casts
+- [x] Verified end-to-end: `pnpm type-check`, `pnpm lint`, `pnpm test` (11/11), `pnpm build` (16 routes), curl smoke (`/`, `/dashboard`, `/zh-TW/...`, `/en/...`, `/api/settings`)
 
 **Queued after:**
 - [ ] Deploy to Vercel — connect repo, copy env vars, set redirect URLs for Supabase Google OAuth to the production domain
@@ -1030,7 +1028,7 @@ supabase/.temp/         — local Supabase temp files
 - [x] History page with recharts chart + summary stats
 - [x] Dark / light mode manual toggle (persisted in localStorage)
 - [x] Default 浮動支出 template (configured in /settings, seeds /month/[ym] form)
-- [ ] i18n with `next-intl` — URL-prefix routing, `zh-TW` (default) + `en`, LocaleToggle in Navbar
+- [x] i18n with `next-intl` — URL-prefix routing, `zh-TW` (default) + `en`, LocaleToggle in Navbar
 - [ ] Deployed to Vercel
 - [ ] Custom domain (optional)
 
