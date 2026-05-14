@@ -5,7 +5,7 @@ import { updateSession } from '@/lib/supabase/middleware'
 
 const intlMiddleware = createIntlMiddleware(routing)
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   // API + OAuth callback: refresh session only, no locale rewriting

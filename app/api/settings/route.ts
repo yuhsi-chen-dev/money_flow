@@ -43,7 +43,7 @@ function parseVariableItems(input: unknown): VariableItem[] | null {
 }
 
 export async function GET() {
-  const supabase = createServerClient()
+  const supabase = await createServerClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()
@@ -65,7 +65,7 @@ export async function GET() {
 }
 
 export async function PUT(request: Request) {
-  const supabase = createServerClient()
+  const supabase = await createServerClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()

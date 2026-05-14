@@ -15,8 +15,8 @@ import { createServerClient } from '@/lib/supabase/server'
 import type { HistoryMonth, MonthlyRecord } from '@/types'
 
 interface PageProps {
-  params: { locale: string }
-  searchParams: { year?: string }
+  params: Promise<{ locale: string }>
+  searchParams: Promise<{ year?: string }>
 }
 
 function isValidYear(year: string): boolean {
@@ -28,23 +28,24 @@ function getCurrentYear(): number {
 }
 
 export default async function HistoryPage({ params, searchParams }: PageProps) {
+  const { locale } = await params
+  const { year: yearParam } = await searchParams
   const t = await getTranslations('history')
   const currentYear = getCurrentYear()
-  const yearParam = searchParams.year
   const year =
     yearParam && isValidYear(yearParam) ? parseInt(yearParam, 10) : currentYear
 
   if (yearParam && !isValidYear(yearParam)) {
-    redirect({ href: '/history', locale: params.locale })
+    redirect({ href: '/history', locale })
     return null
   }
 
-  const supabase = createServerClient()
+  const supabase = await createServerClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()
   if (!user) {
-    redirect({ href: '/login', locale: params.locale })
+    redirect({ href: '/login', locale })
     return null
   }
 
@@ -55,7 +56,7 @@ export default async function HistoryPage({ params, searchParams }: PageProps) {
     .maybeSingle()
 
   if (!settingsRow) {
-    redirect({ href: '/welcome', locale: params.locale })
+    redirect({ href: '/welcome', locale })
     return null
   }
 

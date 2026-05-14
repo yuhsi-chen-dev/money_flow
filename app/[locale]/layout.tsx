@@ -8,7 +8,7 @@ const THEME_INIT_SCRIPT = `(function(){try{var t=localStorage.getItem('mf-theme'
 
 interface Props {
   children: React.ReactNode
-  params: { locale: string }
+  params: Promise<{ locale: string }>
 }
 
 export function generateStaticParams() {
@@ -16,7 +16,7 @@ export function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { locale } = params
+  const { locale } = await params
   if (!hasLocale(routing.locales, locale)) return {}
   const t = await getTranslations({ locale, namespace: 'meta' })
   return {
@@ -25,8 +25,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
-export default function LocaleLayout({ children, params }: Props) {
-  const { locale } = params
+export default async function LocaleLayout({ children, params }: Props) {
+  const { locale } = await params
   if (!hasLocale(routing.locales, locale)) {
     notFound()
   }

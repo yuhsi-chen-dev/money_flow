@@ -1,9 +1,10 @@
 import { redirect } from '@/i18n/navigation'
 
 interface Props {
-  params: { locale: string }
+  params: Promise<{ locale: string }>
 }
 
-export default function LocaleRootPage({ params }: Props) {
-  redirect({ href: '/dashboard', locale: params.locale })
+export default async function LocaleRootPage({ params }: Props) {
+  const { locale } = await params
+  redirect({ href: '/dashboard', locale })
 }

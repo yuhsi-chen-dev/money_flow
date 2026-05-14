@@ -12,23 +12,24 @@ import { formatYM, isValidYM } from '@/lib/utils'
 import type { Locale } from '@/types'
 
 interface PageProps {
-  params: { locale: string; ym: string }
+  params: Promise<{ locale: string; ym: string }>
 }
 
 export default async function MonthPage({ params }: PageProps) {
-  if (!isValidYM(params.ym)) {
+  const { locale: paramLocale, ym } = await params
+  if (!isValidYM(ym)) {
     notFound()
   }
 
   const t = await getTranslations('month')
   const locale = (await getLocale()) as Locale
 
-  const supabase = createServerClient()
+  const supabase = await createServerClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()
   if (!user) {
-    redirect({ href: '/login', locale: params.locale })
+    redirect({ href: '/login', locale: paramLocale })
     return null
   }
 
@@ -39,7 +40,7 @@ export default async function MonthPage({ params }: PageProps) {
     .maybeSingle()
 
   if (!settingsRow) {
-    redirect({ href: '/welcome', locale: params.locale })
+    redirect({ href: '/welcome', locale: paramLocale })
     return null
   }
 
@@ -57,7 +58,7 @@ export default async function MonthPage({ params }: PageProps) {
         </Link>
         <div>
           <h1 className="font-display text-3xl font-bold tracking-tight text-[var(--color-text-primary)] md:text-4xl">
-            {t('headerTitle', { month: formatYM(params.ym, locale) })}
+            {t('headerTitle', { month: formatYM(ym, locale) })}
           </h1>
           <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
             {t('subtitle')}
@@ -65,7 +66,7 @@ export default async function MonthPage({ params }: PageProps) {
         </div>
       </header>
 
-      <VariableExpenseForm ym={params.ym} settings={settings} />
+      <VariableExpenseForm ym={ym} settings={settings} />
     </PageWrapper>
   )
 }

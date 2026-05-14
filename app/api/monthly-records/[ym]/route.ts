@@ -43,15 +43,16 @@ function parseVariableItems(input: unknown): VariableItem[] | null {
 }
 
 interface RouteParams {
-  params: { ym: string }
+  params: Promise<{ ym: string }>
 }
 
 export async function GET(_request: Request, { params }: RouteParams) {
-  if (!isValidYM(params.ym)) {
+  const { ym } = await params
+  if (!isValidYM(ym)) {
     return jsonError('Invalid year_month', 'INVALID_YM', 400)
   }
 
-  const supabase = createServerClient()
+  const supabase = await createServerClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()
@@ -61,7 +62,7 @@ export async function GET(_request: Request, { params }: RouteParams) {
     .from('monthly_records')
     .select('*')
     .eq('user_id', user.id)
-    .eq('year_month', params.ym)
+    .eq('year_month', ym)
     .maybeSingle()
 
   if (error) return jsonError(error.message, 'DB_ERROR', 500)
@@ -74,11 +75,12 @@ export async function GET(_request: Request, { params }: RouteParams) {
 }
 
 export async function PATCH(request: Request, { params }: RouteParams) {
-  if (!isValidYM(params.ym)) {
+  const { ym } = await params
+  if (!isValidYM(ym)) {
     return jsonError('Invalid year_month', 'INVALID_YM', 400)
   }
 
-  const supabase = createServerClient()
+  const supabase = await createServerClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()
@@ -122,7 +124,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     .upsert(
       {
         user_id: user.id,
-        year_month: params.ym,
+        year_month: ym,
         bonus: body.bonus,
         variable_total: body.variableTotal,
         variable_items: variableItems,

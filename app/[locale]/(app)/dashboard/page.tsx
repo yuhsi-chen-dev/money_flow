@@ -16,27 +16,29 @@ import { formatYM, getCurrentYM, isValidYM } from '@/lib/utils'
 import type { Locale } from '@/types'
 
 interface PageProps {
-  params: { locale: string }
-  searchParams: { ym?: string }
+  params: Promise<{ locale: string }>
+  searchParams: Promise<{ ym?: string }>
 }
 
 export default async function DashboardPage({ params, searchParams }: PageProps) {
+  const { locale: paramLocale } = await params
+  const { ym: ymParam } = await searchParams
   const t = await getTranslations('dashboard')
   const locale = (await getLocale()) as Locale
   const currentYM = getCurrentYM()
-  const requestedYM = searchParams.ym ?? currentYM
+  const requestedYM = ymParam ?? currentYM
 
-  if (searchParams.ym && !isValidYM(searchParams.ym)) {
-    redirect({ href: '/dashboard', locale: params.locale })
+  if (ymParam && !isValidYM(ymParam)) {
+    redirect({ href: '/dashboard', locale: paramLocale })
     return null
   }
 
-  const supabase = createServerClient()
+  const supabase = await createServerClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()
   if (!user) {
-    redirect({ href: '/login', locale: params.locale })
+    redirect({ href: '/login', locale: paramLocale })
     return null
   }
 
@@ -47,7 +49,7 @@ export default async function DashboardPage({ params, searchParams }: PageProps)
     .maybeSingle()
 
   if (!settingsRow) {
-    redirect({ href: '/welcome', locale: params.locale })
+    redirect({ href: '/welcome', locale: paramLocale })
     return null
   }
 

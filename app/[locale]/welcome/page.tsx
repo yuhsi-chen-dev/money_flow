@@ -7,19 +7,20 @@ import { cn } from '@/lib/utils'
 import { createServerClient } from '@/lib/supabase/server'
 
 interface PageProps {
-  params: { locale: string }
+  params: Promise<{ locale: string }>
 }
 
 export default async function WelcomePage({ params }: PageProps) {
+  const { locale } = await params
   const t = await getTranslations('welcome')
   const tCommon = await getTranslations('common')
 
-  const supabase = createServerClient()
+  const supabase = await createServerClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()
   if (!user) {
-    redirect({ href: '/login', locale: params.locale })
+    redirect({ href: '/login', locale })
     return null
   }
 

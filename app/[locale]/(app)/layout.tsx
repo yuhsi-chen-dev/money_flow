@@ -5,17 +5,18 @@ import { createServerClient } from '@/lib/supabase/server'
 
 interface Props {
   children: React.ReactNode
-  params: { locale: string }
+  params: Promise<{ locale: string }>
 }
 
 export default async function AppLayout({ children, params }: Props) {
-  const supabase = createServerClient()
+  const { locale } = await params
+  const supabase = await createServerClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()
 
   if (!user) {
-    redirect({ href: '/login', locale: params.locale })
+    redirect({ href: '/login', locale })
   }
 
   return (
