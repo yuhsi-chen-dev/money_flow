@@ -18,6 +18,7 @@
   "nav": {
     "dashboard": "總覽",
     "history": "歷史",
+    "philosophy": "理念",
     "settings": "設定",
     "signOut": "登出",
     "openMenu": "開啟選單",
@@ -53,7 +54,8 @@
         "body": "ETF 定期定額是「pay yourself first」— 強制儲蓄不能少。扣掉固定支出、浮動支出、ETF 之後，剩下的就是「額外儲蓄」— 這個 app 唯一在乎的數字。"
       }
     },
-    "cta": "開始設定"
+    "cta": "開始設定",
+    "ctaBack": "返回總覽"
   },
   "dashboard": {
     "monthSelector": {

@@ -18,6 +18,7 @@ export function Navbar() {
   const links = [
     { href: '/dashboard', label: t('dashboard') },
     { href: '/history', label: t('history') },
+    { href: '/welcome', label: t('philosophy') },
     { href: '/settings', label: t('settings') },
   ] as const
 

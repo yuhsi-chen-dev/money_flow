@@ -18,6 +18,7 @@
   "nav": {
     "dashboard": "Dashboard",
     "history": "History",
+    "philosophy": "Philosophy",
     "settings": "Settings",
     "signOut": "Sign out",
     "openMenu": "Open menu",
@@ -53,7 +54,8 @@
         "body": "ETF auto-investment is \"pay yourself first\" — fixed and non-negotiable. After fixed, variable, and ETF, what's left is Extra Savings — the one number this app cares about."
       }
     },
-    "cta": "Start setup"
+    "cta": "Start setup",
+    "ctaBack": "Back to dashboard"
   },
   "dashboard": {
     "monthSelector": {
