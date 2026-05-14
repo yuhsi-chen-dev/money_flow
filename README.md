@@ -5,7 +5,7 @@
 **清楚知道這個月多存了多少**
 *Know exactly how much extra you saved this month.*
 
-[![Next.js](https://img.shields.io/badge/Next.js-14-000000?style=flat&logo=next.js&logoColor=white)](https://nextjs.org)
+[![Next.js](https://img.shields.io/badge/Next.js-16-000000?style=flat&logo=next.js&logoColor=white)](https://nextjs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-3-38B2AC?style=flat&logo=tailwind-css&logoColor=white)](https://tailwindcss.com)
 [![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3FCF8E?style=flat&logo=supabase&logoColor=white)](https://supabase.com)
@@ -38,7 +38,7 @@ Inspired by Nick Maggiulli's *Just Keep Buying*《持續買進》, MoneyFlow inv
 
 | Layer | Choice |
 |---|---|
-| Framework | Next.js 14 (App Router, Server Components by default) |
+| Framework | Next.js 16 (App Router, Server Components by default, Turbopack builds) |
 | Language | TypeScript 5 (strict mode, no `any`) |
 | Styling | Tailwind CSS v3 + CSS variables (full theme tokens) |
 | Database | Supabase — PostgreSQL with Row Level Security |

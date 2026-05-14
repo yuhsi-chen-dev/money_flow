@@ -11,7 +11,7 @@ A minimalist personal finance tracker built around one formula and one goal:
 **Status:** ✅ `/welcome` dual-mode + Navbar 理念/Philosophy entry (2026-05-14) — same page now serves both first-time onboarding (no Navbar, floating LocaleToggle, 「開始設定 →」 → `/settings`) and review (Navbar at top, 「返回總覽 →」 → `/dashboard`) based on `user_settings`. New 「理念」/"Philosophy" Navbar entry between 歷史 and 設定. Verified: type-check, lint, 11/11 tests, production build green (18 routes, `/[locale]/welcome` bundle 649B), curl smoke confirms unauth flow lands on /login as before.
 
 **Done so far (through 2026-05-13):**
-- [x] Scaffold Next.js 14 project with TypeScript + Tailwind + pnpm
+- [x] Scaffold Next.js project with TypeScript + Tailwind + pnpm (upgraded to Next.js 16 on 2026-05-14)
 - [x] Configure ESLint, Prettier, path aliases (`@/`)
 - [x] Schema migration written at `supabase/migrations/0001_initial_schema.sql`
 - [x] Supabase browser/server clients + session-refresh middleware
@@ -80,7 +80,7 @@ This is **NOT** a generic expense tracker. It is a single-owner financial clarit
 
 | Layer | Technology | Notes |
 |---|---|---|
-| Framework | Next.js 14 (App Router) | Server components by default |
+| Framework | Next.js 16 (App Router) | Server components by default; Turbopack builds; `params`/`searchParams` are `Promise<...>` |
 | Language | TypeScript 5 (strict mode) | No `any`, no `@ts-ignore` |
 | Styling | Tailwind CSS v3 + CSS Variables | All colors via CSS variables |
 | Database | Supabase (PostgreSQL) | Free tier is sufficient |
