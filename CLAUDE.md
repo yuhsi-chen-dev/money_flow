@@ -8,9 +8,9 @@ A minimalist personal finance tracker built around one formula and one goal:
 
 ## Current Task
 
-**Status:** ✅ `/welcome` onboarding (2026-05-13) — first-login intro screen at `/welcome` that names the inspiration (Nick Maggiulli《持續買進》) and explains how MoneyFlow differs from generic category-heavy 記帳 apps. Three Apple-minimal cards (the formula, the philosophy difference, ETF 定期定額 → 額外儲蓄) plus a 「開始設定 →」 CTA. Shown only when `user_settings IS NULL`; once onboarded, visiting `/welcome` redirects to `/dashboard`. Replaced the previous `/settings?reason=onboard` redirect target for first-time users. Verified: type-check clean, lint clean, 11/11 tests, production build green (18 routes), `/welcome` smoke (`/welcome` → `/zh-TW/welcome` → `/zh-TW/login` unauth).
+**Status:** 🛠 `/welcome` becomes dual-mode + Navbar 理念/Philosophy entry (2026-05-14) — `/welcome` is no longer one-time. With no settings yet, it stays the focused onboarding (no Navbar, floating LocaleToggle, 「開始設定 →」 CTA → `/settings`). With settings already saved, it doubles as a re-readable Philosophy reference: the Navbar appears at the top, the floating LocaleToggle is dropped (LocaleToggle lives in the Navbar already), and the CTA flips to 「返回總覽 →」 → `/dashboard`. A new 「理念」 / "Philosophy" entry is added to the Navbar (between 歷史 and 設定) so users can revisit the rule cards anytime.
 
-**Done so far (through 2026-05-12):**
+**Done so far (through 2026-05-13):**
 - [x] Scaffold Next.js 14 project with TypeScript + Tailwind + pnpm
 - [x] Configure ESLint, Prettier, path aliases (`@/`)
 - [x] Schema migration written at `supabase/migrations/0001_initial_schema.sql`
@@ -29,6 +29,13 @@ A minimalist personal finance tracker built around one formula and one goal:
 - [x] Default 浮動支出 template — migration 0002 adds `default_variable_items`; 預設浮動支出範本 editor on `/settings`; `/month/[ym]` auto-opens the breakdown panel with seeded items and locks `variableTotal` to the items-sum while open; shared row mappers extracted to `lib/supabase/mappers.ts`
 - [x] i18n with `next-intl@4.11` — URL-prefix routing (`/zh-TW`, `/en`), every UI string in `messages/{locale}.json`, locale-aware `formatYM`/`formatCurrency`, `LocaleToggle` in Navbar beside `ThemeToggle`; chained middleware (intl + Supabase session refresh) preserves the active locale through auth redirects
 - [x] `/welcome` first-login intro — names the inspiration (Maggiulli《持續買進》), three Apple-minimal cards + 「開始設定 →」 CTA; shown only when `user_settings` is missing, repointed redirects from `/dashboard`, `/month/[ym]`, `/history` to land here
+- [x] Mobile-first refinements — `/welcome` cards `<Reveal>` cascade (IntersectionObserver fade-up, stagger, respects prefers-reduced-motion), tighter mobile sizing across the page, Navbar collapses into a hamburger + full-screen overlay below `md`, ETF input no longer pre-fills 24000 and gains a placeholder hint
+
+**Building next (in progress):**
+- [ ] Drop the "settings exist → redirect to /dashboard" guard on `/welcome` so the same page serves both onboarding and re-reading
+- [ ] When `user_settings` exists, render the `Navbar` at the top of `/welcome` and swap the CTA to 「返回總覽 →」 → `/dashboard`; when it doesn't, keep the existing focused onboarding (no Navbar, floating LocaleToggle, 「開始設定 →」)
+- [ ] Add a 「理念」 / "Philosophy" link to the Navbar `links` array (between 歷史 and 設定); active-state check should match `pathname === '/welcome'`
+- [ ] Add `nav.philosophy` (理念 / Philosophy) and `welcome.ctaBack` (返回總覽 / Back to dashboard) to `messages/{locale}.json`
 
 **Queued after:**
 - [ ] Deploy to Vercel — connect repo, copy env vars, set redirect URLs for Supabase Google OAuth to the production domain
@@ -879,17 +886,26 @@ supabase/.temp/         — local Supabase temp files
 - On auth success → redirect to `/dashboard`
 - If already authenticated → redirect immediately to `/dashboard`
 
-### `/welcome` — 第一次登入導覽
-- **No Navbar** — full focus on the intro flow
+### `/welcome` — 第一次登入導覽 + 理念回顧 (dual-mode)
 - Auth-required: if no session → redirect to `/login`
-- If `user_settings` already exists → redirect to `/dashboard` (so revisiting `/welcome` after onboarding never re-shows the intro)
+- Determines `hasSettings` from a single Supabase query at the top of the page — never redirects on this signal; it controls rendering instead
 - Header: large "MoneyFlow" wordmark + tagline 「清楚知道這個月多存了多少」
-- Three Apple-minimal cards stacked vertically (`max-w-3xl mx-auto`, generous spacing):
-  1. **一個公式，搞懂一切** — `儲蓄 = 收入 − 固定支出 − 浮動支出`. Subtitle: "靈感來自 Nick Maggiulli《持續買進》。重點不在花了多少，而在剩下多少。"
+- Three Apple-minimal cards stacked vertically (`max-w-4xl mx-auto`, generous spacing), wrapped in `<Reveal>` for the scroll cascade:
+  1. **一個公式，搞懂一切** — `儲蓄 = 收入 − 固定支出 − 浮動支出`. Subtitle: "靈感來自尼克．馬朱利《持續買進》。重點不在花了多少，而在剩下多少。"
   2. **不是另一個分類記帳 app** — "不要求你每天輸入每一筆消費。一個月只要在月底花 30 秒，輸入這個月的浮動支出總額即可。"
   3. **你真正多存了多少** — "ETF 定期定額是『pay yourself first』— 強制儲蓄不能少。扣掉固定支出、浮動支出、ETF 之後，剩下的就是『額外儲蓄』— 這個 app 唯一在乎的數字。"
-- Single CTA: 「開始設定 →」 → `/settings` (no `?reason=onboard` query — the welcome page already delivered the message)
-- All strings live under `welcome.*` in `messages/{locale}.json`
+
+**Onboarding mode** (`hasSettings === false`)
+- **No Navbar** — focused funnel
+- Floating `LocaleToggle` pinned top-right
+- CTA: 「開始設定 →」 → `/settings`
+
+**Review mode** (`hasSettings === true`)
+- `Navbar` renders at the top (its 理念/Philosophy entry highlights as active); `LocaleToggle` lives in the Navbar so no floating one is needed
+- Main top padding shifts to `pt-20 md:pt-28` so the hero clears the fixed nav
+- CTA: 「返回總覽 →」 → `/dashboard`
+
+All strings live under `welcome.*` in `messages/{locale}.json` (CTA copy is `welcome.cta` for onboarding, `welcome.ctaBack` for review).
 
 ### `/dashboard` — 當月總覽
 - Auto-detects current month via `getCurrentYM()`
@@ -976,7 +992,7 @@ supabase/.temp/         — local Supabase temp files
 | Situation | Expected Behavior |
 |---|---|
 | First login, no settings | Redirect to `/welcome` (intro screen); CTA there leads to `/settings` |
-| Visit `/welcome` after onboarding (settings exist) | Redirect to `/dashboard` — intro is one-time |
+| Visit `/welcome` after onboarding (settings exist) | Renders the same three cards in review mode — Navbar at the top, CTA flips to 「返回總覽 →」 → `/dashboard`. Reachable anytime via the Navbar's 理念/Philosophy entry. |
 | Dashboard with no record for current month | Show projection with "預估中" badge, variableTotal = 0 |
 | Months with no record in history | Empty bar in chart (height 0), "—" in table cells |
 | Negative 額外儲蓄 | Red color, no error — perfectly valid |
