@@ -8,7 +8,7 @@ A minimalist personal finance tracker built around one formula and one goal:
 
 ## Current Task
 
-**Status:** ✅ `/welcome` dual-mode + Navbar 理念/Philosophy entry (2026-05-14) — same page now serves both first-time onboarding (no Navbar, floating LocaleToggle, 「開始設定 →」 → `/settings`) and review (Navbar at top, 「返回總覽 →」 → `/dashboard`) based on `user_settings`. New 「理念」/"Philosophy" Navbar entry between 歷史 and 設定. Verified: type-check, lint, 11/11 tests, production build green (18 routes, `/[locale]/welcome` bundle 649B), curl smoke confirms unauth flow lands on /login as before.
+**Status:** 🛠 `/settings` "套用範本" starter templates (2026-05-14) — empty `/settings` is intimidating for first-time users. Each of the two list sections (固定支出 + 預設浮動支出範本) gets a 「套用範本」/"Load starter template" button inside its empty state. For 固定支出 the starters are locale-aware names (zh: 房租/電信/網路/水電/訂閱; en: Rent/Mobile/Internet/Utilities/Subscriptions) with amount 0. For 預設浮動支出範本 the starters reuse the existing `DEFAULT_CATEGORIES` (食費/交通/娛樂/購物/醫療/其他) with amount 0. The button is only shown when the list is empty; once any row exists it disappears (the existing 「＋ 新增…」 button stays). Returning users still hydrate from their saved data — no auto-injection.
 
 **Done so far (through 2026-05-13):**
 - [x] Scaffold Next.js project with TypeScript + Tailwind + pnpm (upgraded to Next.js 16 on 2026-05-14)
@@ -965,15 +965,17 @@ All strings live under `welcome.*` in `messages/{locale}.json` (CTA copy is `wel
 ### `/settings` — 設定
 - Page title: "設定"
 - **月固定收入** — required number input
-- **ETF 定期定額** — number input, default 24000, label: "每月固定投資金額"
+- **ETF 定期定額** — number input (empty by default — first-time users consciously enter their own amount; the DB still defaults the column to 24000)
 - **固定支出清單:**
   - List of items: each row has name input + amount input + delete button
   - Inline editing (no separate modal)
   - "＋ 新增固定支出" button appends a new empty row
+  - **Empty state**: shows 「還沒有任何固定支出」 + a 「套用範本」 button. Clicking it appends 5 starter rows (locale-aware names: zh `房租/電信/網路/水電/訂閱`, en `Rent/Mobile/Internet/Utilities/Subscriptions`), each with amount `0` and a fresh `crypto.randomUUID()`. Starter names live in `messages/{locale}.json` under `settings.fixed.starterNames` (array). Button hides once any row exists.
   - Running total shown below: "固定支出合計：NT$XX,XXX"
 - **預設浮動支出範本** — optional template that seeds `/month/[ym]`:
   - List of items: category input (with datalist of `DEFAULT_CATEGORIES`) + amount input + × delete
   - "＋ 新增分類" button appends an empty row
+  - **Empty state**: shows 「還沒有範本」 + a 「套用範本」 button. Clicking it appends one row per entry in `DEFAULT_CATEGORIES` (`食費 / 交通 / 娛樂 / 購物 / 醫療 / 其他`) with amount `0`. Categories are persisted as the canonical zh keys regardless of UI locale; the datalist translates labels for display.
   - Running total shown below: "範本合計：NT$XX,XXX"
   - Empty list = feature inactive; month form keeps its current freeform behavior
 - **Preview** — shows projected 額外儲蓄 assuming no 浮動支出 and no bonus
