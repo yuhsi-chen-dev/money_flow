@@ -184,7 +184,7 @@
       "title": "Income",
       "hint": "Your fixed monthly salary deposit.",
       "label": "Monthly fixed income",
-      "placeholder": "e.g., 80000"
+      "placeholder": "e.g., 88888"
     },
     "etf": {
       "title": "ETF (regular investment)",

@@ -210,6 +210,7 @@ export default function SettingsPage() {
             name="etfAmount"
             type="text"
             inputMode="numeric"
+            placeholder={t('etf.placeholder')}
             value={etfAmount}
             onChange={(e) => setEtfAmount(e.target.value)}
           />
