@@ -5,15 +5,22 @@ import { useTranslations } from 'next-intl'
 
 type Theme = 'light' | 'dark'
 
-const STORAGE_KEY = 'mf-theme'
+const COOKIE = 'mf-theme'
+const ONE_YEAR = 60 * 60 * 24 * 365
+const LEGACY_STORAGE_KEY = 'mf-theme'
 
 function readCurrentTheme(): Theme {
   if (typeof document === 'undefined') return 'dark'
   const attr = document.documentElement.getAttribute('data-theme')
-  if (attr === 'light' || attr === 'dark') return attr
-  return window.matchMedia('(prefers-color-scheme: light)').matches
-    ? 'light'
-    : 'dark'
+  return attr === 'light' ? 'light' : 'dark'
+}
+
+function writeCookie(theme: Theme) {
+  document.cookie = `${COOKIE}=${theme}; path=/; max-age=${ONE_YEAR}; SameSite=Lax`
+}
+
+function hasCookie() {
+  return document.cookie.split('; ').some((p) => p.startsWith(`${COOKIE}=`))
 }
 
 export function ThemeToggle() {
@@ -22,16 +29,27 @@ export function ThemeToggle() {
 
   useEffect(() => {
     setTheme(readCurrentTheme())
+
+    // One-time migration: localStorage → cookie for users from the pre-cookie era.
+    try {
+      const legacy = window.localStorage.getItem(LEGACY_STORAGE_KEY)
+      if ((legacy === 'light' || legacy === 'dark') && !hasCookie()) {
+        writeCookie(legacy)
+        document.documentElement.setAttribute('data-theme', legacy)
+        setTheme(legacy)
+      }
+      if (legacy !== null) {
+        window.localStorage.removeItem(LEGACY_STORAGE_KEY)
+      }
+    } catch {
+      // localStorage may be unavailable (private mode, etc.) — ignore.
+    }
   }, [])
 
   function toggle() {
     const next: Theme = theme === 'light' ? 'dark' : 'light'
     document.documentElement.setAttribute('data-theme', next)
-    try {
-      window.localStorage.setItem(STORAGE_KEY, next)
-    } catch {
-      // Ignore — storage may be unavailable (private mode, etc.)
-    }
+    writeCookie(next)
     setTheme(next)
   }
 
