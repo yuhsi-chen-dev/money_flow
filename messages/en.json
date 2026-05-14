@@ -200,7 +200,9 @@
       "total": "Total",
       "empty": "No fixed expenses yet.",
       "namePlaceholder": "Name (e.g., Rent)",
-      "addButton": "＋ Add fixed expense"
+      "addButton": "＋ Add fixed expense",
+      "loadStarters": "Load starter template",
+      "starterNames": ["Rent", "Mobile", "Internet", "Utilities", "Subscriptions"]
     },
     "defaults": {
       "title": "Default variable-expense template",
@@ -208,7 +210,8 @@
       "total": "Template total",
       "empty": "No template yet. You can still record manually at month-end.",
       "categoryPlaceholder": "Category (e.g., Food)",
-      "addButton": "＋ Add category"
+      "addButton": "＋ Add category",
+      "loadStarters": "Load starter template"
     },
     "preview": {
       "title": "Preview",

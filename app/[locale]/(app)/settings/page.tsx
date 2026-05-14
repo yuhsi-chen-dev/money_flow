@@ -98,8 +98,30 @@ export default function SettingsPage() {
     setExpenses((prev) => prev.filter((e) => e.id !== id))
   }
 
+  function loadFixedStarters() {
+    const names = (t.raw('fixed.starterNames') as unknown) as string[] | undefined
+    if (!Array.isArray(names) || names.length === 0) return
+    setExpenses(
+      names.map((name) => ({
+        id: crypto.randomUUID(),
+        name,
+        amount: 0,
+      }))
+    )
+  }
+
   function addDefaultItem() {
     setDefaultItems((prev) => [...prev, newDefaultItem()])
+  }
+
+  function loadDefaultStarters() {
+    setDefaultItems(
+      DEFAULT_CATEGORIES.map((category) => ({
+        id: crypto.randomUUID(),
+        category,
+        amount: 0,
+      }))
+    )
   }
 
   function updateDefaultCategory(id: string, category: string) {
@@ -235,8 +257,11 @@ export default function SettingsPage() {
           </div>
 
           {expenses.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-[var(--color-border)] px-4 py-10 text-center text-sm text-[var(--color-text-tertiary)]">
-              {t('fixed.empty')}
+            <div className="flex flex-col items-center gap-4 rounded-xl border border-dashed border-[var(--color-border)] px-4 py-10 text-center text-sm text-[var(--color-text-tertiary)]">
+              <span>{t('fixed.empty')}</span>
+              <Button variant="secondary" size="sm" onClick={loadFixedStarters}>
+                {t('fixed.loadStarters')}
+              </Button>
             </div>
           ) : (
             <ul className="flex flex-col gap-3">
@@ -306,8 +331,11 @@ export default function SettingsPage() {
           </div>
 
           {defaultItems.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-[var(--color-border)] px-4 py-10 text-center text-sm text-[var(--color-text-tertiary)]">
-              {t('defaults.empty')}
+            <div className="flex flex-col items-center gap-4 rounded-xl border border-dashed border-[var(--color-border)] px-4 py-10 text-center text-sm text-[var(--color-text-tertiary)]">
+              <span>{t('defaults.empty')}</span>
+              <Button variant="secondary" size="sm" onClick={loadDefaultStarters}>
+                {t('defaults.loadStarters')}
+              </Button>
             </div>
           ) : (
             <ul className="flex flex-col gap-3">

@@ -200,7 +200,9 @@
       "total": "合計",
       "empty": "還沒有任何固定支出。",
       "namePlaceholder": "名稱（例如 房租）",
-      "addButton": "＋ 新增固定支出"
+      "addButton": "＋ 新增固定支出",
+      "loadStarters": "套用範本",
+      "starterNames": ["房租", "電信", "網路", "水電", "訂閱"]
     },
     "defaults": {
       "title": "預設浮動支出範本",
@@ -208,7 +210,8 @@
       "total": "範本合計",
       "empty": "還沒有範本。不設定也沒關係，月底依然可以手動填寫。",
       "categoryPlaceholder": "分類（例如 食費）",
-      "addButton": "＋ 新增分類"
+      "addButton": "＋ 新增分類",
+      "loadStarters": "套用範本"
     },
     "preview": {
       "title": "預覽",
