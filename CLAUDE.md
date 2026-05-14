@@ -8,7 +8,7 @@ A minimalist personal finance tracker built around one formula and one goal:
 
 ## Current Task
 
-**Status:** 🛠 `/welcome` becomes dual-mode + Navbar 理念/Philosophy entry (2026-05-14) — `/welcome` is no longer one-time. With no settings yet, it stays the focused onboarding (no Navbar, floating LocaleToggle, 「開始設定 →」 CTA → `/settings`). With settings already saved, it doubles as a re-readable Philosophy reference: the Navbar appears at the top, the floating LocaleToggle is dropped (LocaleToggle lives in the Navbar already), and the CTA flips to 「返回總覽 →」 → `/dashboard`. A new 「理念」 / "Philosophy" entry is added to the Navbar (between 歷史 and 設定) so users can revisit the rule cards anytime.
+**Status:** ✅ `/welcome` dual-mode + Navbar 理念/Philosophy entry (2026-05-14) — same page now serves both first-time onboarding (no Navbar, floating LocaleToggle, 「開始設定 →」 → `/settings`) and review (Navbar at top, 「返回總覽 →」 → `/dashboard`) based on `user_settings`. New 「理念」/"Philosophy" Navbar entry between 歷史 and 設定. Verified: type-check, lint, 11/11 tests, production build green (18 routes, `/[locale]/welcome` bundle 649B), curl smoke confirms unauth flow lands on /login as before.
 
 **Done so far (through 2026-05-13):**
 - [x] Scaffold Next.js 14 project with TypeScript + Tailwind + pnpm
@@ -30,12 +30,7 @@ A minimalist personal finance tracker built around one formula and one goal:
 - [x] i18n with `next-intl@4.11` — URL-prefix routing (`/zh-TW`, `/en`), every UI string in `messages/{locale}.json`, locale-aware `formatYM`/`formatCurrency`, `LocaleToggle` in Navbar beside `ThemeToggle`; chained middleware (intl + Supabase session refresh) preserves the active locale through auth redirects
 - [x] `/welcome` first-login intro — names the inspiration (Maggiulli《持續買進》), three Apple-minimal cards + 「開始設定 →」 CTA; shown only when `user_settings` is missing, repointed redirects from `/dashboard`, `/month/[ym]`, `/history` to land here
 - [x] Mobile-first refinements — `/welcome` cards `<Reveal>` cascade (IntersectionObserver fade-up, stagger, respects prefers-reduced-motion), tighter mobile sizing across the page, Navbar collapses into a hamburger + full-screen overlay below `md`, ETF input no longer pre-fills 24000 and gains a placeholder hint
-
-**Building next (in progress):**
-- [ ] Drop the "settings exist → redirect to /dashboard" guard on `/welcome` so the same page serves both onboarding and re-reading
-- [ ] When `user_settings` exists, render the `Navbar` at the top of `/welcome` and swap the CTA to 「返回總覽 →」 → `/dashboard`; when it doesn't, keep the existing focused onboarding (no Navbar, floating LocaleToggle, 「開始設定 →」)
-- [ ] Add a 「理念」 / "Philosophy" link to the Navbar `links` array (between 歷史 and 設定); active-state check should match `pathname === '/welcome'`
-- [ ] Add `nav.philosophy` (理念 / Philosophy) and `welcome.ctaBack` (返回總覽 / Back to dashboard) to `messages/{locale}.json`
+- [x] `/welcome` dual-mode + Navbar 理念/Philosophy entry — same cards in both onboarding and review modes, settings-state-driven CTA + Navbar rendering, new `nav.philosophy` and `welcome.ctaBack` i18n keys
 
 **Queued after:**
 - [ ] Deploy to Vercel — connect repo, copy env vars, set redirect URLs for Supabase Google OAuth to the production domain
