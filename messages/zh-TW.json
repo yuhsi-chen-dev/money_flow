@@ -211,7 +211,8 @@
       "empty": "還沒有範本。不設定也沒關係，月底依然可以手動填寫。",
       "categoryPlaceholder": "分類（例如 食費）",
       "addButton": "＋ 新增分類",
-      "loadStarters": "套用範本"
+      "loadStarters": "套用範本",
+      "starterCategories": ["食費", "交通", "娛樂", "購物", "醫療", "其他"]
     },
     "preview": {
       "title": "預覽",

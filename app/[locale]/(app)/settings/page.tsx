@@ -115,8 +115,12 @@ export default function SettingsPage() {
   }
 
   function loadDefaultStarters() {
+    const categories = (t.raw('defaults.starterCategories') as unknown) as
+      | string[]
+      | undefined
+    if (!Array.isArray(categories) || categories.length === 0) return
     setDefaultItems(
-      DEFAULT_CATEGORIES.map((category) => ({
+      categories.map((category) => ({
         id: crypto.randomUUID(),
         category,
         amount: 0,

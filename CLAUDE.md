@@ -8,7 +8,7 @@ A minimalist personal finance tracker built around one formula and one goal:
 
 ## Current Task
 
-**Status:** 🛠 `/settings` "套用範本" starter templates (2026-05-14) — empty `/settings` is intimidating for first-time users. Each of the two list sections (固定支出 + 預設浮動支出範本) gets a 「套用範本」/"Load starter template" button inside its empty state. For 固定支出 the starters are locale-aware names (zh: 房租/電信/網路/水電/訂閱; en: Rent/Mobile/Internet/Utilities/Subscriptions) with amount 0. For 預設浮動支出範本 the starters reuse the existing `DEFAULT_CATEGORIES` (食費/交通/娛樂/購物/醫療/其他) with amount 0. The button is only shown when the list is empty; once any row exists it disappears (the existing 「＋ 新增…」 button stays). Returning users still hydrate from their saved data — no auto-injection.
+**Status:** 🛠 `/settings` "套用範本" starter templates (2026-05-14) — empty `/settings` is intimidating for first-time users. Each of the two list sections (固定支出 + 預設浮動支出範本) gets a 「套用範本」/"Load starter template" button inside its empty state. Both starter lists are locale-aware: 固定支出 → zh 房租/電信/網路/水電/訂閱, en Rent/Mobile/Internet/Utilities/Subscriptions; 預設浮動支出範本 → zh 食費/交通/娛樂/購物/醫療/其他, en Food/Transport/Entertainment/Shopping/Medical/Other. All starter rows seed amount `0`. The label loaded into each row is whatever the active locale renders — i.e. it is **persisted verbatim** in the user's saved data (no canonical zh-key rewrite). The button is only shown when the list is empty; once any row exists it disappears (the existing 「＋ 新增…」 button stays). Returning users still hydrate from their saved data — no auto-injection.
 
 **Done so far (through 2026-05-13):**
 - [x] Scaffold Next.js project with TypeScript + Tailwind + pnpm (upgraded to Next.js 16 on 2026-05-14)
@@ -633,9 +633,10 @@ MoneyFlow supports two locales: **`en`** (default for routing) and **`zh-TW`** (
 - For currency, the symbol stays `NT$` in both locales (MoneyFlow is NTD-only); only thousands grouping is locale-driven via `Intl.NumberFormat`
 
 ### `DEFAULT_CATEGORIES` localization
-- The constant stays as canonical zh keys (`'食費' | '交通' | ...`) — these are the **stored** values in `variable_items.category`
-- The picker `<datalist>` displays a translated label per key via `useTranslations('categories')`, but the value persisted to the DB is whatever the user actually typed/selected (unchanged behavior)
-- Existing zh entries in any historical record are NOT rewritten — they continue to render verbatim
+- The constant stays as canonical zh keys (`'食費' | '交通' | ...`) — used for the autocomplete `<datalist>` mapping and for `useTranslations('categories')` lookups
+- The picker `<datalist>` displays a translated label per key (zh → "食費", en → "Food"); the value persisted to the DB is whatever the user actually typed/selected
+- When the user clicks 「套用範本」 on `/settings`, the starter rows seed the locale-specific labels from `messages/{locale}.json` (`settings.defaults.starterCategories`) and persist them verbatim — so an English user gets `Food/Transport/...` stored, a Chinese user gets `食費/交通/...` stored
+- Existing entries in any historical record are NOT rewritten across a locale switch — they continue to render verbatim
 
 ### Edge cases
 - User switches locale on `/month/2025-03` mid-edit: form state is preserved (toggle is a `router.replace`, not a remount of the form root)
@@ -975,7 +976,7 @@ All strings live under `welcome.*` in `messages/{locale}.json` (CTA copy is `wel
 - **預設浮動支出範本** — optional template that seeds `/month/[ym]`:
   - List of items: category input (with datalist of `DEFAULT_CATEGORIES`) + amount input + × delete
   - "＋ 新增分類" button appends an empty row
-  - **Empty state**: shows 「還沒有範本」 + a 「套用範本」 button. Clicking it appends one row per entry in `DEFAULT_CATEGORIES` (`食費 / 交通 / 娛樂 / 購物 / 醫療 / 其他`) with amount `0`. Categories are persisted as the canonical zh keys regardless of UI locale; the datalist translates labels for display.
+  - **Empty state**: shows 「還沒有範本」 + a 「套用範本」 button. Clicking it appends one row per entry in the active locale's starter list (zh: `食費 / 交通 / 娛樂 / 購物 / 醫療 / 其他`; en: `Food / Transport / Entertainment / Shopping / Medical / Other`) with amount `0`. Starter labels live in `messages/{locale}.json` under `settings.defaults.starterCategories`. The label is persisted verbatim — loading starters in English saves English category strings; loading in Chinese saves the canonical zh keys. The datalist further offers the canonical zh keys (with translated display labels) for autocomplete on any manually-added row.
   - Running total shown below: "範本合計：NT$XX,XXX"
   - Empty list = feature inactive; month form keeps its current freeform behavior
 - **Preview** — shows projected 額外儲蓄 assuming no 浮動支出 and no bonus

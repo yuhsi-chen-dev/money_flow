@@ -211,7 +211,8 @@
       "empty": "No template yet. You can still record manually at month-end.",
       "categoryPlaceholder": "Category (e.g., Food)",
       "addButton": "＋ Add category",
-      "loadStarters": "Load starter template"
+      "loadStarters": "Load starter template",
+      "starterCategories": ["Food", "Transport", "Entertainment", "Shopping", "Medical", "Other"]
     },
     "preview": {
       "title": "Preview",
