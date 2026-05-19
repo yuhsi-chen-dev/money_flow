@@ -1,5 +1,5 @@
 import { redirect } from '@/i18n/navigation'
-import { createServerClient } from '@/lib/supabase/server'
+import { getAuthUser } from '@/lib/supabase/server'
 
 interface Props {
   children: React.ReactNode
@@ -8,10 +8,7 @@ interface Props {
 
 export default async function AuthLayout({ children, params }: Props) {
   const { locale } = await params
-  const supabase = await createServerClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const user = await getAuthUser()
 
   if (user) {
     redirect({ href: '/dashboard', locale })

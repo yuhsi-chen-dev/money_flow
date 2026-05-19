@@ -1,3 +1,4 @@
+import { cache } from 'react'
 import {
   createServerClient as createSSRClient,
   type CookieOptions,
@@ -6,7 +7,7 @@ import { cookies } from 'next/headers'
 
 type CookieToSet = { name: string; value: string; options: CookieOptions }
 
-export async function createServerClient() {
+export const createServerClient = cache(async () => {
   const cookieStore = await cookies()
 
   return createSSRClient(
@@ -29,4 +30,12 @@ export async function createServerClient() {
       },
     }
   )
-}
+})
+
+export const getAuthUser = cache(async () => {
+  const supabase = await createServerClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  return user
+})

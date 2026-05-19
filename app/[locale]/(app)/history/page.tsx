@@ -11,7 +11,7 @@ import {
   type MonthlyRecordRow,
   type SettingsRow,
 } from '@/lib/supabase/mappers'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient, getAuthUser } from '@/lib/supabase/server'
 import type { HistoryMonth, MonthlyRecord } from '@/types'
 
 interface PageProps {
@@ -40,15 +40,13 @@ export default async function HistoryPage({ params, searchParams }: PageProps) {
     return null
   }
 
-  const supabase = await createServerClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const user = await getAuthUser()
   if (!user) {
     redirect({ href: '/login', locale })
     return null
   }
 
+  const supabase = await createServerClient()
   const { data: settingsRow } = await supabase
     .from('user_settings')
     .select('*')

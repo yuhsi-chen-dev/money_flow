@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
@@ -9,7 +9,7 @@ import { useToast } from '@/components/ui/Toast'
 import { CategoryList } from '@/components/month/CategoryList'
 import { LivePreview } from '@/components/month/LivePreview'
 import { useRouter } from '@/i18n/navigation'
-import { useMonthlyRecord } from '@/hooks/useMonthlyRecord'
+import { useMonthlyRecordSave } from '@/hooks/useMonthlyRecord'
 import { calculateMonth } from '@/lib/finance'
 import { formatCurrency, formatYM } from '@/lib/utils'
 import type { Locale, MonthlyRecord, UserSettings, VariableItem } from '@/types'
@@ -19,6 +19,7 @@ const NOTE_MAX = 200
 interface Props {
   ym: string
   settings: UserSettings
+  initialRecord: MonthlyRecord | null
 }
 
 function parseIntSafe(value: string): number {
@@ -39,42 +40,48 @@ function sumItems(items: VariableItem[]): number {
   return items.reduce((sum, i) => sum + i.amount, 0)
 }
 
-export function VariableExpenseForm({ ym, settings }: Props) {
+export function VariableExpenseForm({ ym, settings, initialRecord }: Props) {
   const t = useTranslations('month')
   const tCommon = useTranslations('common')
   const locale = useLocale() as Locale
   const monthLabel = formatYM(ym, locale)
   const router = useRouter()
   const { toast } = useToast()
-  const { record, loading, error, save } = useMonthlyRecord(ym)
+  const { save } = useMonthlyRecordSave(ym)
 
-  const [variableTotal, setVariableTotal] = useState('')
-  const [bonus, setBonus] = useState('')
-  const [bonusOpen, setBonusOpen] = useState(false)
-  const [note, setNote] = useState('')
-  const [items, setItems] = useState<VariableItem[]>([])
-  const [itemsOpen, setItemsOpen] = useState(false)
-  const [hydrated, setHydrated] = useState(false)
+  const initialItems = useMemo<VariableItem[]>(() => {
+    if (initialRecord) return initialRecord.variableItems
+    if (settings.defaultVariableItems.length > 0) {
+      return cloneTemplate(settings.defaultVariableItems)
+    }
+    return []
+  }, [initialRecord, settings.defaultVariableItems])
+
+  const initialItemsOpen =
+    !!initialRecord
+      ? initialRecord.variableItems.length > 0
+      : settings.defaultVariableItems.length > 0
+
+  const initialVariableTotal = (() => {
+    if (initialRecord) return String(initialRecord.variableTotal)
+    if (settings.defaultVariableItems.length > 0) {
+      return String(sumItems(settings.defaultVariableItems))
+    }
+    return ''
+  })()
+
+  const [variableTotal, setVariableTotal] = useState(initialVariableTotal)
+  const [bonus, setBonus] = useState(
+    initialRecord && initialRecord.bonus > 0 ? String(initialRecord.bonus) : ''
+  )
+  const [bonusOpen, setBonusOpen] = useState(
+    !!initialRecord && initialRecord.bonus > 0
+  )
+  const [note, setNote] = useState(initialRecord?.note ?? '')
+  const [items, setItems] = useState<VariableItem[]>(initialItems)
+  const [itemsOpen, setItemsOpen] = useState(initialItemsOpen)
   const [saving, setSaving] = useState(false)
   const [showRequiredError, setShowRequiredError] = useState(false)
-
-  useEffect(() => {
-    if (loading || hydrated) return
-    if (record) {
-      setVariableTotal(String(record.variableTotal))
-      setBonus(record.bonus > 0 ? String(record.bonus) : '')
-      setBonusOpen(record.bonus > 0)
-      setNote(record.note ?? '')
-      setItems(record.variableItems)
-      setItemsOpen(record.variableItems.length > 0)
-    } else if (settings.defaultVariableItems.length > 0) {
-      const seeded = cloneTemplate(settings.defaultVariableItems)
-      setItems(seeded)
-      setItemsOpen(true)
-      setVariableTotal(String(sumItems(seeded)))
-    }
-    setHydrated(true)
-  }, [loading, record, hydrated, settings.defaultVariableItems])
 
   const itemsSum = sumItems(items)
   const effectiveTotal = itemsOpen ? itemsSum : parseIntSafe(variableTotal)
@@ -133,23 +140,9 @@ export function VariableExpenseForm({ ym, settings }: Props) {
     }
   }
 
-  if (loading) {
-    return (
-      <div className="flex min-h-[40vh] items-center justify-center text-sm text-[var(--color-text-tertiary)]">
-        {tCommon('loading')}
-      </div>
-    )
-  }
-
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_minmax(260px,340px)]">
       <div className="flex flex-col gap-8">
-        {error && (
-          <div className="rounded-xl border border-[var(--color-danger-muted)] bg-[var(--color-danger-muted)] px-4 py-3 text-sm text-[var(--color-danger)]">
-            {t('loadError', { message: error })}
-          </div>
-        )}
-
         <section className="flex flex-col gap-4">
           <SectionHeader title={t('sections.income.title')} hint={t('sections.income.hint')} />
 

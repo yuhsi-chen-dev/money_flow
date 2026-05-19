@@ -11,7 +11,7 @@ import {
   type MonthlyRecordRow,
   type SettingsRow,
 } from '@/lib/supabase/mappers'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient, getAuthUser } from '@/lib/supabase/server'
 import { formatYM, getCurrentYM, isValidYM } from '@/lib/utils'
 import type { Locale } from '@/types'
 
@@ -33,15 +33,13 @@ export default async function DashboardPage({ params, searchParams }: PageProps)
     return null
   }
 
-  const supabase = await createServerClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const user = await getAuthUser()
   if (!user) {
     redirect({ href: '/login', locale: paramLocale })
     return null
   }
 
+  const supabase = await createServerClient()
   const { data: settingsRow } = await supabase
     .from('user_settings')
     .select('*')

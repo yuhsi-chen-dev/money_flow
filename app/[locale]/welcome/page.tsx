@@ -4,7 +4,7 @@ import { LocaleToggle } from '@/components/layout/LocaleToggle'
 import { Navbar } from '@/components/layout/Navbar'
 import { Reveal } from '@/components/ui/Reveal'
 import { cn } from '@/lib/utils'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient, getAuthUser } from '@/lib/supabase/server'
 
 interface PageProps {
   params: Promise<{ locale: string }>
@@ -15,15 +15,13 @@ export default async function WelcomePage({ params }: PageProps) {
   const t = await getTranslations('welcome')
   const tCommon = await getTranslations('common')
 
-  const supabase = await createServerClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const user = await getAuthUser()
   if (!user) {
     redirect({ href: '/login', locale })
     return null
   }
 
+  const supabase = await createServerClient()
   const { data: settingsRow } = await supabase
     .from('user_settings')
     .select('id')

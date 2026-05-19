@@ -4,10 +4,12 @@ import { Link, redirect } from '@/i18n/navigation'
 import { VariableExpenseForm } from '@/components/month/VariableExpenseForm'
 import { PageWrapper } from '@/components/layout/PageWrapper'
 import {
+  rowToMonthlyRecord,
   rowToSettings,
+  type MonthlyRecordRow,
   type SettingsRow,
 } from '@/lib/supabase/mappers'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient, getAuthUser } from '@/lib/supabase/server'
 import { formatYM, isValidYM } from '@/lib/utils'
 import type { Locale } from '@/types'
 
@@ -24,27 +26,36 @@ export default async function MonthPage({ params }: PageProps) {
   const t = await getTranslations('month')
   const locale = (await getLocale()) as Locale
 
-  const supabase = await createServerClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const user = await getAuthUser()
   if (!user) {
     redirect({ href: '/login', locale: paramLocale })
     return null
   }
 
-  const { data: settingsRow } = await supabase
-    .from('user_settings')
-    .select('*')
-    .eq('user_id', user.id)
-    .maybeSingle()
+  const supabase = await createServerClient()
+  const [settingsResult, recordResult] = await Promise.all([
+    supabase
+      .from('user_settings')
+      .select('*')
+      .eq('user_id', user.id)
+      .maybeSingle(),
+    supabase
+      .from('monthly_records')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('year_month', ym)
+      .maybeSingle(),
+  ])
 
-  if (!settingsRow) {
+  if (!settingsResult.data) {
     redirect({ href: '/welcome', locale: paramLocale })
     return null
   }
 
-  const settings = rowToSettings(settingsRow as SettingsRow)
+  const settings = rowToSettings(settingsResult.data as SettingsRow)
+  const initialRecord = recordResult.data
+    ? rowToMonthlyRecord(recordResult.data as MonthlyRecordRow)
+    : null
 
   return (
     <PageWrapper>
@@ -66,7 +77,11 @@ export default async function MonthPage({ params }: PageProps) {
         </div>
       </header>
 
-      <VariableExpenseForm ym={ym} settings={settings} />
+      <VariableExpenseForm
+        ym={ym}
+        settings={settings}
+        initialRecord={initialRecord}
+      />
     </PageWrapper>
   )
 }
